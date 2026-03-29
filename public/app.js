@@ -4,7 +4,7 @@
  */
 
 // 1. Data Layer - Supabase Client Integration
-// Legacy file (not used by the current Khabari frontend).
+// Legacy file (not used by the current Khabri -NewsWala frontend).
 // Do not ship real keys in public assets.
 const SUPABASE_URL = '';
 const SUPABASE_ANON_KEY = '';
@@ -21,8 +21,8 @@ class DataLayer {
     async fetchLatestNews() {
         if (!supabase) {
             return [
-                { id: '1', title: 'Legacy Elite frontend is disabled', source: 'Khabari', isLead: true },
-                { id: '2', title: 'Use the main site UI (index.html + script.js).', source: 'Khabari', isLead: false }
+                { id: '1', title: 'Legacy Elite frontend is disabled', source: 'Khabri -NewsWala', isLead: true },
+                { id: '2', title: 'Use the main site UI (index.html + script.js).', source: 'Khabri -NewsWala', isLead: false }
             ];
         }
         // Fetch news from the Supabase 'news_cache' table
@@ -53,7 +53,7 @@ class DataLayer {
         return data.map((item, index) => ({
             id: item.id,
             title: item.title,
-            source: item.source_name || 'Khabari Alert',
+            source: item.source_name || 'Khabri -NewsWala Alert',
             isLead: index === 0
         }));
     }

@@ -163,7 +163,7 @@ function startListening(startPort, attemptsLeft) {
 
     const onListening = () => {
         // eslint-disable-next-line no-console
-        console.log(`Khabari dev server running: http://localhost:${port}`);
+        console.log(`Khabri -NewsWala dev server running: http://localhost:${port}`);
         // eslint-disable-next-line no-console
         console.log('API endpoints: /api/news, /api/summary, /api/chat');
     };

@@ -1,8 +1,8 @@
-# Khabari -
+# Khabri -NewsWala
 
 A comprehensive, responsive news web application that demonstrates real-world API integration using modern web development technologies. This project showcases the ability to fetch, process, and display real-time news data from multiple sources while maintaining exceptional user experience across all devices.
 
-Khabari (meaning "news" in Hindi/Urdu) is more than just a news aggregator - it's a demonstration of advanced frontend development skills, API orchestration, error handling, and responsive design principles. The application intelligently manages multiple data sources, implements fallback mechanisms, and provides a seamless user experience regardless of network conditions or API availability.
+Khabri -NewsWala is more than just a news aggregator - it's a demonstration of advanced frontend development skills, API orchestration, error handling, and responsive design principles. The application intelligently manages multiple data sources, implements fallback mechanisms, and provides a seamless user experience regardless of network conditions or API availability.
 
 ## 🌟 Core Features
 

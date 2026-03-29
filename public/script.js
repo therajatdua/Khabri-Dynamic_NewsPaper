@@ -185,10 +185,10 @@
     function renderHero(article) {
         const published = article.publishedAt ? formatTime(article.publishedAt) : '—';
         const desc = article.description || article.content || '';
-        const img = article.image || 'https://via.placeholder.com/1200x700?text=Khabari';
+        const img = article.image || 'https://via.placeholder.com/1200x700?text=Khabri-NewsWala';
 
         els.hero.innerHTML = `
-            <img class="hero-img" src="${img}" alt="" loading="lazy" onerror="this.src='https://via.placeholder.com/1200x700?text=Khabari'" />
+            <img class="hero-img" src="${img}" alt="" loading="lazy" onerror="this.src='https://via.placeholder.com/1200x700?text=Khabri-NewsWala'" />
             <div class="hero-body">
                 <div class="meta">
                     <span class="source">${escapeHtml(article.sourceName)}</span>
@@ -209,10 +209,10 @@
         els.grid.innerHTML = articles.map(a => {
             const published = a.publishedAt ? formatTime(a.publishedAt) : '—';
             const desc = a.description || a.content || '';
-            const img = a.image || 'https://via.placeholder.com/800x500?text=Khabari';
+            const img = a.image || 'https://via.placeholder.com/800x500?text=Khabri-NewsWala';
             return `
                 <article class="card">
-                    <img class="card-img" src="${img}" alt="" loading="lazy" onerror="this.src='https://via.placeholder.com/800x500?text=Khabari'" />
+                    <img class="card-img" src="${img}" alt="" loading="lazy" onerror="this.src='https://via.placeholder.com/800x500?text=Khabri-NewsWala'" />
                     <div class="card-body">
                         <div class="meta">
                             <span class="source">${escapeHtml(a.sourceName)}</span>
@@ -353,7 +353,7 @@
             const desc = state.query
                 ? 'Try a different category or clear search.'
                 : 'Check your internet connection, or set GNEWS_API_KEY to enable server mode.';
-            els.hero.innerHTML = `<div class="hero-body"><div class="meta"><span class="source">Khabari</span></div><h1 class="hero-title">${escapeHtml(title)}</h1><p class="hero-desc">${escapeHtml(desc)}</p></div>`;
+            els.hero.innerHTML = `<div class="hero-body"><div class="meta"><span class="source">Khabri -NewsWala</span></div><h1 class="hero-title">${escapeHtml(title)}</h1><p class="hero-desc">${escapeHtml(desc)}</p></div>`;
             els.grid.innerHTML = '';
             renderQuick([]);
             showContent();
