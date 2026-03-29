@@ -20,6 +20,25 @@ export default async function handler(req, res) {
     const ctx = (context || '').toString().trim();
     const newsContext = [linesFromArticles, ctx].filter(Boolean).join('\n\n');
 
+    const fallbackFromHeadlines = (reason) => {
+        const items = Array.isArray(articles) ? articles.slice(0, 8) : [];
+        if (items.length === 0) {
+            return `I couldn't generate an AI answer right now${reason ? ` (${reason})` : ''}.\n\nTry switching category/region or refresh to load headlines first.`;
+        }
+
+        const list = items
+            .map((a, i) => {
+                const title = (a?.title || '').toString().trim();
+                const source = (a?.source || a?.sourceName || 'News').toString().trim();
+                const url = (a?.url || '').toString().trim();
+                const line1 = `${i + 1}. ${title} (${source})`;
+                return url ? `${line1}\n${url}` : line1;
+            })
+            .join('\n\n');
+
+        return `I can answer based on the headlines loaded in this page, but the server AI response failed${reason ? ` (${reason})` : ''}.\n\nHere are the latest headlines:\n\n${list}\n\nAsk: "summarize #2" or "details about #3".`;
+    };
+
     if (!GROQ_API_KEY) {
         // Safe fallback: return a structured response pointing to links.
         return res.status(200).json({
@@ -47,10 +66,25 @@ export default async function handler(req, res) {
             })
         });
 
-        const data = await response.json();
+        let data;
+        try {
+            data = await response.json();
+        } catch {
+            data = null;
+        }
+
+        if (!response.ok) {
+            const msg = data?.error?.message || `HTTP ${response.status}`;
+            return res.status(200).json({ answer: fallbackFromHeadlines(msg) });
+        }
+
         const answer = data?.choices?.[0]?.message?.content?.trim();
-        return res.status(200).json({ answer: answer || 'No answer returned.' });
+        if (!answer) {
+            return res.status(200).json({ answer: fallbackFromHeadlines('empty AI response') });
+        }
+
+        return res.status(200).json({ answer });
     } catch {
-        return res.status(500).json({ answer: 'Connection to AI failed. Please try again.' });
+        return res.status(200).json({ answer: fallbackFromHeadlines('connection error') });
     }
 }
