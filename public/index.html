@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khabari | India & World News</title>
+    <meta name="description" content="Auto-updated India-first news with an AI assistant that can summarize and answer specific questions." />
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="brand">
+                <div class="brand-mark">Khabari</div>
+                <div class="brand-tag">India-first • Auto-updated • Global coverage</div>
+            </div>
+
+            <form class="search" id="searchForm" autocomplete="off">
+                <input id="searchInput" type="search" placeholder="Search within the latest headlines…" aria-label="Search news" />
+                <button class="btn" type="submit">Search</button>
+            </form>
+
+            <div class="header-meta">
+                <div class="pill-group" role="group" aria-label="Region">
+                    <button class="pill is-active" id="regionIndia" type="button">India</button>
+                    <button class="pill" id="regionWorld" type="button">World</button>
+                </div>
+                <div class="updated">
+                    <span class="updated-label">Updated</span>
+                    <time id="lastUpdated" class="updated-time">—</time>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="category-nav" aria-label="Categories">
+        <div class="container category-inner" id="categoryNav">
+            <button class="cat is-active" data-cat="general" type="button">Top</button>
+            <button class="cat" data-cat="technology" type="button">Tech</button>
+            <button class="cat" data-cat="business" type="button">Business</button>
+            <button class="cat" data-cat="sports" type="button">Sports</button>
+            <button class="cat" data-cat="health" type="button">Health</button>
+            <button class="cat" data-cat="science" type="button">Science</button>
+            <button class="cat" data-cat="entertainment" type="button">Entertainment</button>
+        </div>
+    </nav>
+
+    <main class="container layout" aria-live="polite">
+        <section class="main" aria-label="Top stories">
+            <div class="skeleton" id="skeleton">
+                <div class="sk sk-hero"></div>
+                <div class="sk sk-line"></div>
+                <div class="sk sk-line short"></div>
+                <div class="sk sk-grid">
+                    <div class="sk sk-card"></div>
+                    <div class="sk sk-card"></div>
+                    <div class="sk sk-card"></div>
+                    <div class="sk sk-card"></div>
+                </div>
+            </div>
+
+            <article class="hero" id="hero" hidden></article>
+
+            <div class="section-head">
+                <h2 id="sectionTitle">Latest</h2>
+                <button class="btn subtle" id="refreshBtn" type="button">Refresh</button>
+            </div>
+            <div class="grid" id="grid" hidden></div>
+        </section>
+
+        <aside class="side" aria-label="Daily quick news">
+            <div class="side-card">
+                <div class="side-head">
+                    <h3>Daily Quick News</h3>
+                    <span class="live-dot" title="Auto-updating"></span>
+                </div>
+                <ol class="quick" id="quick"></ol>
+            </div>
+
+            <div class="side-card">
+                <div class="side-head">
+                    <h3>Tips</h3>
+                </div>
+                <p class="hint">Click <strong>Summarize</strong> on any story. Use the AI assistant for specific questions like “What’s happening in Indian tech today?”</p>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Summary modal -->
+    <div class="modal" id="summaryModal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="true"></div>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-label="AI Summary">
+            <div class="modal-head">
+                <div class="modal-title">AI Summary</div>
+                <button class="icon-btn" data-close="true" aria-label="Close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-story" id="summaryStory"></div>
+                <div class="modal-text" id="summaryText">Loading…</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating AI assistant -->
+    <button class="fab" id="botToggle" aria-label="Open AI assistant">AI</button>
+    <section class="bot" id="bot" aria-label="AI assistant" hidden>
+        <div class="bot-head">
+            <div>
+                <div class="bot-title">Khabari AI</div>
+                <div class="bot-sub">Summaries + specific details (India & World)</div>
+            </div>
+            <div class="bot-actions">
+                <button class="btn subtle" id="readBriefBtn" type="button">Listen</button>
+                <button class="icon-btn" id="botClose" type="button" aria-label="Close assistant">×</button>
+            </div>
+        </div>
+        <div class="bot-body" id="botMessages"></div>
+        <form class="bot-input" id="botForm">
+            <input id="botInput" type="text" placeholder="Ask about the latest news…" aria-label="Ask the assistant" />
+            <button class="btn" type="submit">Send</button>
+        </form>
+    </section>
+
+    <script src="/script.js" defer></script>
+</body>
+</html>

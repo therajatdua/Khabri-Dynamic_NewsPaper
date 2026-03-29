@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/public/index.html" },
+    { "source": "/styles.css", "destination": "/public/styles.css" },
+    { "source": "/script.js", "destination": "/public/script.js" },
+    { "source": "/manifest.json", "destination": "/public/manifest.json" },
+    { "source": "/sw.js", "destination": "/public/sw.js" }
+  ]
+}

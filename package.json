@@ -1,0 +1,29 @@
+{
+  "name": "khabari-api-integration",
+  "version": "1.0.0",
+  "description": "A responsive news aggregator with dynamic API integration",
+  "main": "public/index.html",
+  "scripts": {
+    "dev": "node dev-server.mjs",
+    "start": "node dev-server.mjs",
+    "build": "echo 'Static site - no build needed'"
+  },
+  "keywords": [
+    "news",
+    "api-integration",
+    "responsive",
+    "javascript",
+    "html5",
+    "css3"
+  ],
+  "author": "Rajat Dua",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "serve": "^14.2.0"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^16.6.1"
+  }
+}
