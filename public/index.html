@@ -21,9 +21,12 @@
             </form>
 
             <div class="header-meta">
-                <div class="pill-group" role="group" aria-label="Region">
-                    <button class="pill is-active" id="regionIndia" type="button">India</button>
-                    <button class="pill" id="regionWorld" type="button">World</button>
+                <div class="header-actions">
+                    <div class="pill-group" role="group" aria-label="Region">
+                        <button class="pill is-active" id="regionIndia" type="button">India</button>
+                        <button class="pill" id="regionWorld" type="button">World</button>
+                    </div>
+                    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">Dark</button>
                 </div>
                 <div class="updated">
                     <span class="updated-label">Updated</span>
@@ -102,7 +105,7 @@
     </div>
 
     <!-- Floating AI assistant -->
-            <button class="fab" id="botToggle" aria-label="Open AI assistant">AI</button>
+        <button class="fab" id="botToggle" aria-label="Open AI assistant">AI</button>
     <section class="bot" id="bot" aria-label="AI assistant" hidden>
         <div class="bot-head">
             <div>

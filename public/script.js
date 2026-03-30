@@ -13,6 +13,7 @@
         searchInput: document.getElementById('searchInput'),
         regionIndia: document.getElementById('regionIndia'),
         regionWorld: document.getElementById('regionWorld'),
+        themeToggle: document.getElementById('themeToggle'),
         categoryNav: document.getElementById('categoryNav'),
         skeleton: document.getElementById('skeleton'),
         hero: document.getElementById('hero'),
@@ -114,6 +115,42 @@
         } catch {
             // ignore
         }
+    }
+
+    const THEME_STORAGE_KEY = 'khabri-newswala-theme';
+
+    function getPreferredTheme() {
+        let saved = '';
+        try {
+            saved = safeText(localStorage.getItem(THEME_STORAGE_KEY));
+        } catch {
+            saved = '';
+        }
+        if (saved === 'dark' || saved === 'light') return saved;
+
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
+        return 'light';
+    }
+
+    function applyTheme(theme) {
+        document.documentElement.dataset.theme = theme;
+        if (els.themeToggle) {
+            els.themeToggle.textContent = theme === 'dark' ? 'Light' : 'Dark';
+            els.themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+        }
+    }
+
+    function toggleTheme() {
+        const current = document.documentElement.dataset.theme || 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        try {
+            localStorage.setItem(THEME_STORAGE_KEY, next);
+        } catch {
+            // ignore
+        }
+        applyTheme(next);
     }
 
     async function fetchNewsFromApi({ category, region, query }) {
@@ -405,6 +442,10 @@
     }
 
     function bindEvents() {
+        if (els.themeToggle) {
+            els.themeToggle.addEventListener('click', toggleTheme);
+        }
+
         els.regionIndia.addEventListener('click', async () => {
             setRegion('in');
             state.query = '';
@@ -497,6 +538,7 @@
     }
 
     async function start() {
+        applyTheme(getPreferredTheme());
         await cleanupServiceWorkers();
         bindEvents();
         setRegion('in');
