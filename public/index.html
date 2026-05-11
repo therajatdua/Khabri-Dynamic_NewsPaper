@@ -10,7 +10,7 @@
 <body>
     <header class="site-header">
         <div class="container header-inner">
-            <div class="brand">
+            <div class="brand" id="brandLogo" style="cursor: pointer;" tabindex="0" role="button">
                 <div class="brand-mark">Khabri -NewsWala</div>
                 <div class="brand-tag">India-first • Auto-updated • Global coverage</div>
             </div>
@@ -123,6 +123,35 @@
             <button class="btn" type="submit">Send</button>
         </form>
     </section>
+
+    <!-- Iframe Modal -->
+    <div class="modal" id="iframeModal" aria-hidden="true">
+        <div class="modal-backdrop" data-close-iframe="true"></div>
+        <div class="modal-card iframe-card" role="dialog" aria-modal="true" aria-label="Full News">
+            <div class="modal-head">
+                <div class="modal-title" id="iframeTitle" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;">Loading News...</div>
+                <div style="display:flex;gap:8px;">
+                    <a class="icon-btn" id="iframeExternalLink" href="#" target="_blank" rel="noreferrer" title="Open in new tab" style="text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:14px;">↗</a>
+                    <button class="icon-btn" data-close-iframe="true" aria-label="Close">×</button>
+                </div>
+            </div>
+            <div class="modal-body p-0" style="padding:0; height: calc(100vh - 120px);">
+                <iframe id="newsIframe" class="news-iframe" src="about:blank" sandbox="allow-same-origin allow-scripts allow-popups allow-forms" title="News Content" style="width:100%; height:100%; border:none;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div class="footer-col">
+                <div class="brand-mark">Khabri -NewsWala</div>
+                <p>Delivering top headlines and AI-powered insights, right to your screen.</p>
+            </div>
+            <div class="footer-col" style="text-align: right;">
+                <p>&copy; 2026 Khabri-NewsWala. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="/script.js" defer></script>
 </body>

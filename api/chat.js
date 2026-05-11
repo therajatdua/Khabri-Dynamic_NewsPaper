@@ -106,7 +106,7 @@ export default async function handler(req, res) {
             .replace(/[^a-z0-9\s#]/g, ' ')
             .split(/\s+/)
             .map(w => w.trim())
-            .filter(w => w.length >= 3 && !stop.has(w));
+            .filter(w => w.length >= 2 && !stop.has(w));
 
         if (words.length === 0) return items.slice(0, 5);
 

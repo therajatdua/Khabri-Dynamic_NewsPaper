@@ -4,7 +4,8 @@
         category: 'general',
         query: '',
         articles: [],
-        autoRefreshMs: 5 * 60 * 1000,
+        quickArticles: [],
+        autoRefreshMs: 15 * 60 * 1000,
         refreshTimer: null
     };
 
@@ -33,7 +34,13 @@
         botMessages: document.getElementById('botMessages'),
         botForm: document.getElementById('botForm'),
         botInput: document.getElementById('botInput'),
-        readBriefBtn: document.getElementById('readBriefBtn')
+        readBriefBtn: document.getElementById('readBriefBtn'),
+
+        iframeModal: document.getElementById('iframeModal'),
+        iframeTitle: document.getElementById('iframeTitle'),
+        iframeExternalLink: document.getElementById('iframeExternalLink'),
+        newsIframe: document.getElementById('newsIframe'),
+        brandLogo: document.getElementById('brandLogo')
     };
 
     const FALLBACK_NEWSAPI_REGION = {
@@ -154,10 +161,20 @@
     }
 
     async function fetchNewsFromApi({ category, region, query }) {
+        const cacheKey = `news_cache_${category}_${region}_${query}`;
+        try {
+            const cached = JSON.parse(sessionStorage.getItem(cacheKey));
+            if (cached && cached.timestamp && (Date.now() - cached.timestamp < 15 * 60 * 1000)) {
+                return cached.articles;
+            }
+        } catch { /* ignore */ }
+
         const qs = new URLSearchParams();
         if (category) qs.set('category', category);
         if (region) qs.set('country', region);
         if (query) qs.set('q', query);
+
+        let finalArticles = [];
 
         try {
             const res = await fetch(`/api/news?${qs.toString()}`);
@@ -165,22 +182,35 @@
             const json = await res.json();
             const articles = Array.isArray(json) ? json : json.articles;
             if (!Array.isArray(articles)) throw new Error('Invalid /api/news response');
-            return articles.map(normalizeArticle).filter(a => a.title && a.url);
+            finalArticles = articles.map(normalizeArticle).filter(a => a.title && a.url);
         } catch {
-            if (query) return [];
-
             const country = region === 'in' ? FALLBACK_NEWSAPI_REGION.in : FALLBACK_NEWSAPI_REGION.world;
             const url = `https://saurav.tech/NewsAPI/top-headlines/category/${encodeURIComponent(category)}/${encodeURIComponent(country)}.json`;
             try {
                 const res = await fetch(url);
-                if (!res.ok) return [];
+                if (!res.ok) throw new Error('Static fallback failed');
                 const json = await res.json();
-                const articles = (json.articles || []).map(normalizeArticle).filter(a => a.title && a.url);
-                return articles;
+                let articles = (json.articles || []).map(normalizeArticle).filter(a => a.title && a.url);
+                if (query) {
+                    const qLower = query.toLowerCase();
+                    articles = articles.filter(a => 
+                        a.title.toLowerCase().includes(qLower) || 
+                        a.description.toLowerCase().includes(qLower)
+                    );
+                }
+                finalArticles = articles;
             } catch {
-                return [];
+                finalArticles = [];
             }
         }
+
+        if (finalArticles.length > 0) {
+            try {
+                sessionStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), articles: finalArticles }));
+            } catch { /* ignore */ }
+        }
+
+        return finalArticles;
     }
 
     function pickHero(articles) {
@@ -225,17 +255,19 @@
         const img = article.image || 'https://via.placeholder.com/1200x700?text=Khabri-NewsWala';
 
         els.hero.innerHTML = `
-            <img class="hero-img" src="${img}" alt="" loading="lazy" onerror="this.src='https://via.placeholder.com/1200x700?text=Khabri-NewsWala'" />
+            <div class="hero-img-wrapper">
+                <img class="hero-img" src="${img}" alt="" loading="lazy" onerror="this.src='https://via.placeholder.com/1200x700?text=Khabri-NewsWala'" data-action="open-iframe" data-url="${article.url}" data-title="${escapeHtml(article.title)}" style="cursor:pointer;" />
+            </div>
             <div class="hero-body">
                 <div class="meta">
                     <span class="source">${escapeHtml(article.sourceName)}</span>
                     <span>•</span>
                     <span>${escapeHtml(published)}</span>
                 </div>
-                <h1 class="hero-title"><a href="${article.url}" target="_blank" rel="noreferrer">${escapeHtml(article.title)}</a></h1>
+                <h1 class="hero-title"><a href="${article.url}" data-action="open-iframe" data-title="${escapeHtml(article.title)}" onclick="event.preventDefault()">${escapeHtml(article.title)}</a></h1>
                 <p class="hero-desc">${escapeHtml(desc)}</p>
                 <div class="hero-actions">
-                    <a class="btn subtle" href="${article.url}" target="_blank" rel="noreferrer">Read</a>
+                    <button class="btn subtle" type="button" data-action="open-iframe" data-url="${article.url}" data-title="${escapeHtml(article.title)}">Read</button>
                     <button class="btn" type="button" data-action="summarize" data-id="${article.id}">Summarize</button>
                 </div>
             </div>
@@ -248,19 +280,21 @@
             const desc = a.description || a.content || '';
             const img = a.image || 'https://via.placeholder.com/800x500?text=Khabri-NewsWala';
             return `
-                <article class="card">
-                    <img class="card-img" src="${img}" alt="" loading="lazy" onerror="this.src='https://via.placeholder.com/800x500?text=Khabri-NewsWala'" />
+                <article class="card" data-action="open-iframe" data-url="${a.url}" data-title="${escapeHtml(a.title)}">
+                    <div class="card-img-wrapper">
+                        <img class="card-img" src="${img}" alt="" loading="lazy" onerror="this.src='https://via.placeholder.com/800x500?text=Khabri-NewsWala'" />
+                    </div>
                     <div class="card-body">
                         <div class="meta">
                             <span class="source">${escapeHtml(a.sourceName)}</span>
                             <span>•</span>
                             <span>${escapeHtml(published)}</span>
                         </div>
-                        <h3 class="card-title"><a href="${a.url}" target="_blank" rel="noreferrer">${escapeHtml(a.title)}</a></h3>
+                        <h3 class="card-title"><a href="${a.url}" data-action="open-iframe" data-title="${escapeHtml(a.title)}" onclick="event.preventDefault()">${escapeHtml(a.title)}</a></h3>
                         <p class="card-desc">${escapeHtml(desc)}</p>
                         <div class="card-actions">
                             <button class="btn subtle" type="button" data-action="summarize" data-id="${a.id}">Summarize</button>
-                            <a class="btn subtle" href="${a.url}" target="_blank" rel="noreferrer">Open</a>
+                            <button class="btn subtle" type="button" data-action="open-iframe" data-url="${a.url}" data-title="${escapeHtml(a.title)}">Open</button>
                         </div>
                     </div>
                 </article>
@@ -269,9 +303,12 @@
     }
 
     function renderQuick(articles) {
-        const quick = articles.slice(0, 10);
+        if (!state.query && state.category === 'general') {
+            state.quickArticles = articles.slice(0, 10);
+        }
+        const quick = state.quickArticles.length ? state.quickArticles : articles.slice(0, 10);
         els.quick.innerHTML = quick.map(a => {
-            return `<li><a href="${a.url}" target="_blank" rel="noreferrer">${escapeHtml(a.title)}</a></li>`;
+            return `<li><a href="${a.url}" data-action="open-iframe" data-title="${escapeHtml(a.title)}" onclick="event.preventDefault()">${escapeHtml(a.title)}</a></li>`;
         }).join('');
     }
 
@@ -309,7 +346,7 @@
 
     function buildLocalAnswer(question) {
         const q = safeText(question).toLowerCase();
-        const tokens = q.split(/\W+/).filter(t => t.length >= 3);
+        const tokens = q.split(/\W+/).filter(t => t.length >= 2);
 
         const scored = state.articles
             .map(a => {
@@ -482,13 +519,44 @@
         });
 
         els.refreshBtn.addEventListener('click', () => refresh());
+        
+        if (els.brandLogo) {
+            els.brandLogo.addEventListener('click', async () => {
+                setRegion('in');
+                setCategory('general');
+                state.query = '';
+                els.searchInput.value = '';
+                await refresh();
+            });
+        }
 
         document.addEventListener('click', (e) => {
             const close = e.target.closest('[data-close="true"]');
             if (close) closeSummaryModal();
+            
+            const closeIframe = e.target.closest('[data-close-iframe="true"]');
+            if (closeIframe) {
+                els.iframeModal.classList.remove('is-open');
+                els.iframeModal.setAttribute('aria-hidden', 'true');
+                els.newsIframe.src = 'about:blank';
+            }
+
+            const iframeAction = e.target.closest('[data-action="open-iframe"]');
+            if (iframeAction) {
+                const targetUrl = iframeAction.getAttribute('data-url') || iframeAction.getAttribute('href');
+                const title = iframeAction.getAttribute('data-title') || 'Full News';
+                if (targetUrl) {
+                    els.iframeTitle.textContent = title;
+                    els.iframeExternalLink.href = targetUrl;
+                    els.newsIframe.src = targetUrl;
+                    els.iframeModal.classList.add('is-open');
+                    els.iframeModal.setAttribute('aria-hidden', 'false');
+                }
+            }
 
             const summarizeBtn = e.target.closest('[data-action="summarize"]');
             if (summarizeBtn) {
+                e.stopPropagation();
                 const id = summarizeBtn.getAttribute('data-id');
                 const article = state.articles.find(a => a.id === id);
                 if (article) openSummaryModal(article);
@@ -499,6 +567,11 @@
             if (e.key === 'Escape') {
                 closeSummaryModal();
                 closeBot();
+                if (els.iframeModal && els.iframeModal.classList.contains('is-open')) {
+                    els.iframeModal.classList.remove('is-open');
+                    els.iframeModal.setAttribute('aria-hidden', 'true');
+                    els.newsIframe.src = 'about:blank';
+                }
             }
         });
 
@@ -529,11 +602,26 @@
         });
 
         els.readBriefBtn.addEventListener('click', () => {
+            if (window.speechSynthesis && window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                els.readBriefBtn.textContent = 'Listen';
+                return;
+            }
+            
             const top = state.articles.slice(0, 5);
             const brief = top.length
                 ? `Here are the top headlines: ${top.map((a, i) => `${i + 1}. ${a.title}`).join(' ')}.`
                 : 'No headlines loaded yet.';
             speak(brief);
+            els.readBriefBtn.textContent = 'Stop';
+            
+            // Revert text if possible (using a timeout rough estimate or interval, since utterance events can be unreliable across browsers)
+            const checkEnd = setInterval(() => {
+                if (!window.speechSynthesis.speaking) {
+                    els.readBriefBtn.textContent = 'Listen';
+                    clearInterval(checkEnd);
+                }
+            }, 1000);
         });
     }
 
