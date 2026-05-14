@@ -3,7 +3,10 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // 1. Check Authentication (admin835 / khabri@835@)
+    // 1. Check Authentication (From .env)
+    const EXPECTED_ID = process.env.ADMIN_ID || 'admin835';
+    const EXPECTED_PW = process.env.ADMIN_PASSWORD || 'khabri@835@';
+
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Mock ')) {
         return res.status(401).json({ error: 'Unauthorized' });
@@ -12,33 +15,16 @@ export default async function handler(req, res) {
     const base64Creds = authHeader.split(' ')[1];
     const credentials = Buffer.from(base64Creds, 'base64').toString('utf-8');
     
-    if (credentials !== 'admin835:khabri@835@') {
+    if (credentials !== `${EXPECTED_ID}:${EXPECTED_PW}`) {
         return res.status(401).json({ error: 'Unauthorized credentials' });
     }
-
-    // Fallback Mock Data in case Supabase is not configured or empty
-    const fallbackData = {
-        totalArticles: 1450,
-        uniqueUsers: 340,
-        totalLikes: 890,
-        sources: {
-            labels: ['TechCrunch', 'BBC News', 'CNN', 'Reuters', 'IGN'],
-            values: [450, 300, 250, 200, 250]
-        },
-        dates: {
-            labels: ['May 8', 'May 9', 'May 10', 'May 11', 'May 12', 'May 13', 'May 14'],
-            values: [120, 150, 180, 130, 200, 170, 220]
-        },
-        isMock: true
-    };
 
     // 2. Fetch real analytics from Supabase
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    // If keys missing, return realistic mock data to keep the UI active
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-        return res.status(200).json(fallbackData);
+        return res.status(500).json({ error: 'Missing Supabase configured keys in .env' });
     }
 
     const headers = {
@@ -59,8 +45,14 @@ export default async function handler(req, res) {
         }
 
         if (!cacheData || cacheData.length === 0) {
-            // No real data yet, return fallback to show a populated dashboard
-            return res.status(200).json(fallbackData);
+            return res.status(200).json({
+                totalArticles: 0,
+                uniqueUsers: 0,
+                totalLikes: 0,
+                sources: { labels: [], values: [] },
+                dates: { labels: [], values: [] },
+                isMock: false
+            });
         }
 
         const sourceCounts = {};
@@ -101,6 +93,6 @@ export default async function handler(req, res) {
         res.status(200).json(analyticsData);
     } catch (err) {
         console.error('Error fetching from Supabase:', err);
-        return res.status(200).json(fallbackData);
+        return res.status(500).json({ error: 'Failed to access remote database' });
     }
 }

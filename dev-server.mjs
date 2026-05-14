@@ -132,6 +132,7 @@ function safeJoin(base, requestPath) {
 async function routeStatic(_req, res, url) {
     let pathname = url.pathname;
     if (pathname === '/') pathname = '/index.html';
+    else if (pathname === '/admin' || pathname === '/admin/') pathname = '/admin.html';
 
     const target = safeJoin(PUBLIC_DIR, pathname);
     if (!target) {
