@@ -54,7 +54,7 @@ function getBody(req) {
 async function routeApi(req, res, url) {
     const pathname = url.pathname;
 
-    const apiMatch = pathname.match(/^\/api\/(news|summary|chat)$/);
+    const apiMatch = pathname.match(/^\/api\/(news|summary|chat|admin)$/);
     if (!apiMatch) return false;
 
     const name = apiMatch[1];

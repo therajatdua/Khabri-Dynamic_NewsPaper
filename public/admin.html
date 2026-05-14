@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Khabri Dynamic NewsPaper</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Admin Specific Styling (Leveraging styles.css variables) */
+    .admin-wrapper {
+      min-height: calc(100vh - 150px);
+      padding: 40px 0;
+    }
+
+    /* Auth Screen */
+    .auth-view {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 60vh;
+    }
+    .auth-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+    }
+    .auth-card h2 {
+      margin-top: 0;
+      color: var(--text);
+      font-size: 24px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .auth-input {
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .auth-input:focus {
+      border-color: var(--accent-2);
+    }
+    .auth-btn {
+      background: var(--accent-2);
+      color: #fff;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .auth-btn:hover { background: #2563eb; } /* Hardcoded slightly darker blue */
+    .auth-error {
+      color: var(--accent);
+      font-size: 14px;
+      margin-top: 8px;
+      text-align: center;
+      display: none;
+    }
+
+    /* Dashboard Layout */
+    .dashboard-view { display: none; }
+    
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+    .dash-title {
+      margin: 0;
+      font-size: 32px;
+      color: var(--text);
+      letter-spacing: -0.03em;
+    }
+    
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .metric-label {
+      font-size: 14px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    .metric-value {
+      font-size: 48px;
+      font-weight: 900;
+      color: var(--accent-2);
+      margin-top: 8px;
+      letter-spacing: -0.04em;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 900px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+    .chart-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .chart-panel h3 {
+      margin-top: 0;
+      color: var(--text);
+      font-size: 18px;
+      margin-bottom: 24px;
+    }
+    
+    .demo-banner {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 24px;
+      display: none;
+      font-weight: 500;
+    }
+    .demo-banner strong { font-weight: 800; }
+  </style>
+</head>
+<body>
+  <!-- Existing Site Header (re-used for native look) -->
+  <header class="site-header">
+    <div class="container header-inner" style="grid-template-columns: 1fr auto;">
+        <a href="/" class="brand" style="text-decoration: none;">
+            <div class="brand-mark" style="color:var(--text)">Khabri Secure Admin</div>
+            <div class="brand-tag">Administration & Analytics Controls</div>
+        </a>
+        <div class="header-actions">
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">Dark</button>
+            <button class="btn" id="logoutBtn" style="display:none;">Sign Out</button>
+        </div>
+    </div>
+  </header>
+
+  <main class="container admin-wrapper">
+    <!-- Auth Section -->
+    <div class="auth-view" id="authView">
+      <div class="auth-card">
+        <h2>Executive Login</h2>
+        <form class="auth-form" id="loginForm">
+          <input class="auth-input" type="text" id="adminId" placeholder="Admin ID (admin835)" required autocomplete="off">
+          <input class="auth-input" type="password" id="adminPassword" placeholder="Password (khabri@835@)" required>
+          <button class="auth-btn" type="submit">Authenticate</button>
+          <div class="auth-error" id="loginError">Invalid credentials. Access Denied.</div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div class="dashboard-view" id="dashboardView">
+      <div class="dash-header">
+        <h1 class="dash-title">Platform Intelligence</h1>
+      </div>
+      
+      <div class="demo-banner" id="demoBanner">
+        <strong>⚠️ Database Not Linked:</strong> The Supabase keys are absent or the database is unpopulated. Displaying generated fallback analytics.
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">Articles Synchronized</div>
+          <div class="metric-value" id="statArticles">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Unique End Users</div>
+          <div class="metric-value" id="statUsers">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Engagement Actions</div>
+          <div class="metric-value" style="color:var(--accent);" id="statInteractions">0</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-panel">
+          <h3>Aggregation Activity History (Trailing)</h3>
+          <div style="position: relative; height: 300px;">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-panel">
+          <h3>Articles By Source API</h3>
+          <div style="position: relative; height: 300px;">
+            <canvas id="pieChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/admin.js"></script>
+</body>
+</html>
