@@ -1,12 +1,27 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 try {
-    // Loads .env into process.env for local development.
-    // Optional so the server still runs even if dependencies aren't installed yet.
-    await import('dotenv/config');
+    // Manually parse .env if dotenv is not installed
+    const envPath = path.join(process.cwd(), '.env');
+    if (existsSync(envPath)) {
+        const envConfig = readFileSync(envPath, 'utf8');
+        envConfig.split('\n').forEach(line => {
+            const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+            if (match) {
+                const key = match[1];
+                let value = match[2] || '';
+                // Remove quotes if present
+                if (value.length > 0 && value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
+                    value = value.replace(/^"|"$/g, '');
+                }
+                process.env[key] = value;
+            }
+        });
+    }
 } catch {
     // ignore
 }
