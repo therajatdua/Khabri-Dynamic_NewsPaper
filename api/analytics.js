@@ -4,24 +4,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        // 1. Verify Access Code
-        const { code } = req.body;
-        const ANALYTICS_CODE = process.env.ANALYTICS_CODE || '2005';
-
-        // Debug logging
-        console.log('Code received:', code, 'Type:', typeof code);
-        console.log('ANALYTICS_CODE:', ANALYTICS_CODE, 'Type:', typeof ANALYTICS_CODE);
-
-        // Ensure both are strings and trim whitespace
-        const codeStr = String(code).trim();
-        const expectedCode = String(ANALYTICS_CODE).trim();
-
-        if (!codeStr || codeStr !== expectedCode) {
-            console.log('Code mismatch! Received:', codeStr, 'Expected:', expectedCode);
-            return res.status(401).json({ error: 'Invalid code' });
-        }
-
-        // 2. Validate Supabase config
+        // Validate Supabase config
         const SUPABASE_URL = process.env.SUPABASE_URL;
         const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
