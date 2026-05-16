@@ -84,12 +84,15 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
     }
     .dash-title {
       margin: 0;
       font-size: 32px;
       color: var(--text);
       letter-spacing: -0.03em;
+      flex: 1;
     }
     .exit-btn {
       background: var(--accent);
@@ -103,22 +106,23 @@
     }
     .exit-btn:hover { background: #dc2626; }
     
-    .metric-grid {
+    /* Top Metrics */
+    .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
       margin-bottom: 32px;
     }
     .metric-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 24px;
+      padding: 20px;
       text-align: center;
     }
     .metric-label {
       color: var(--text-secondary);
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 500;
       margin-bottom: 8px;
       text-transform: uppercase;
@@ -126,18 +130,29 @@
     }
     .metric-value {
       color: var(--text);
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 700;
       line-height: 1;
     }
+    .metric-change {
+      font-size: 12px;
+      color: var(--accent-2);
+      margin-top: 4px;
+    }
 
-    /* Charts */
+    /* Charts Grid */
     .charts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
       gap: 24px;
       margin-bottom: 32px;
     }
+    @media (max-width: 1024px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
     .chart-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -155,6 +170,81 @@
       height: 300px;
     }
 
+    /* Table */
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 32px;
+      overflow-x: auto;
+    }
+    .table-card h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: var(--text);
+      font-size: 18px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    table thead {
+      background: var(--surface-2);
+      color: var(--text-secondary);
+    }
+    table th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    table tr:hover {
+      background: var(--surface-2);
+    }
+
+    /* Stats Row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    .stat-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .stat-box h4 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: var(--text);
+      font-size: 16px;
+    }
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-item:last-child {
+      border-bottom: none;
+    }
+    .stat-label {
+      color: var(--text-secondary);
+    }
+    .stat-value {
+      color: var(--text);
+      font-weight: 600;
+    }
+
     /* Loading */
     .loading {
       text-align: center;
@@ -168,8 +258,8 @@
     <!-- Code Access Screen -->
     <div id="codeAccessView" class="code-access-view">
       <div class="code-card">
-        <h2>📊 Analytics</h2>
-        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 24px;">Enter access code</p>
+        <h2>📊 Analytics Dashboard</h2>
+        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 24px;">Enter access code to view detailed analytics</p>
         <form id="codeForm" class="code-form">
           <input 
             id="accessCode" 
@@ -180,7 +270,7 @@
             inputmode="numeric"
             required
           />
-          <button type="submit" class="code-btn">Access Analytics</button>
+          <button type="submit" class="code-btn">Access Dashboard</button>
           <div id="codeError" class="code-error"></div>
         </form>
       </div>
@@ -189,40 +279,127 @@
     <!-- Dashboard Screen -->
     <div id="dashboardView" class="dashboard-view">
       <div class="dash-header">
-        <h1 class="dash-title">📊 Khabri Analytics Dashboard</h1>
+        <h1 class="dash-title">📊 Khabri Analytics</h1>
         <button id="exitBtn" class="exit-btn">Exit</button>
       </div>
 
-      <!-- Metrics -->
-      <div class="metric-grid">
+      <!-- Key Metrics -->
+      <div class="metrics-grid">
         <div class="metric-card">
-          <div class="metric-label">Total Articles</div>
-          <div class="metric-value" id="totalArticles">-</div>
+          <div class="metric-label">Total Users</div>
+          <div class="metric-value" id="totalUsers">-</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">Unique Users</div>
-          <div class="metric-value" id="uniqueUsers">-</div>
+          <div class="metric-label">Total Visits</div>
+          <div class="metric-value" id="totalVisits">-</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">Total Likes</div>
-          <div class="metric-value" id="totalLikes">-</div>
+          <div class="metric-label">Articles Viewed</div>
+          <div class="metric-value" id="articlesViewed">-</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">AI Features Used</div>
+          <div class="metric-value" id="aiUsage">-</div>
         </div>
       </div>
 
-      <!-- Charts -->
+      <!-- Charts Row 1 -->
       <div class="charts-grid">
         <div class="chart-card">
-          <h3>Top News Sources</h3>
+          <h3>📱 Device Distribution</h3>
           <div class="chart-container">
-            <canvas id="sourcesChart"></canvas>
+            <canvas id="deviceChart"></canvas>
           </div>
         </div>
         <div class="chart-card">
-          <h3>Articles Over Time (7 Days)</h3>
+          <h3>🌍 Top Locations</h3>
           <div class="chart-container">
-            <canvas id="datesChart"></canvas>
+            <canvas id="locationsChart"></canvas>
           </div>
         </div>
+      </div>
+
+      <!-- Charts Row 2 -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>👥 Gender Distribution</h3>
+          <div class="chart-container">
+            <canvas id="genderChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>📅 Age Groups</h3>
+          <div class="chart-container">
+            <canvas id="ageChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row 3 -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>✨ AI Features Usage</h3>
+          <div class="chart-container">
+            <canvas id="aiChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>📈 Daily Visits (7 Days)</h3>
+          <div class="chart-container">
+            <canvas id="visitsChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Boxes -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <h4>Browser Statistics</h4>
+          <div id="browserStats"></div>
+        </div>
+        <div class="stat-box">
+          <h4>User Engagement</h4>
+          <div id="engagementStats"></div>
+        </div>
+        <div class="stat-box">
+          <h4>Content Performance</h4>
+          <div id="contentStats"></div>
+        </div>
+      </div>
+
+      <!-- Detailed Tables -->
+      <div class="table-card">
+        <h3>📍 Location Details</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Country/City</th>
+              <th>Users</th>
+              <th>Visits</th>
+              <th>Avg. Duration</th>
+            </tr>
+          </thead>
+          <tbody id="locationTableBody">
+            <tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-card">
+        <h3>🔝 Top Articles</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Article Title</th>
+              <th>Views</th>
+              <th>Likes</th>
+              <th>Shares</th>
+            </tr>
+          </thead>
+          <tbody id="articlesTableBody">
+            <tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">Loading...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -277,7 +454,7 @@
         dashboardView.style.display = 'none';
         codeAccessView.style.display = 'flex';
         codeForm.reset();
-        codeForm.querySelector('button').textContent = 'Access Analytics';
+        codeForm.querySelector('button').textContent = 'Access Dashboard';
         codeForm.querySelector('button').disabled = false;
         activeCharts.forEach(c => c.destroy());
         activeCharts = [];
@@ -308,77 +485,202 @@
           codeError.textContent = 'Invalid code. Try again.';
           codeError.style.display = 'block';
           const btn = codeForm.querySelector('button');
-          btn.textContent = 'Access Analytics';
+          btn.textContent = 'Access Dashboard';
           btn.disabled = false;
         });
       }
 
       function paintDashboard(data) {
-        document.getElementById('totalArticles').textContent = data.totalArticles.toLocaleString();
-        document.getElementById('uniqueUsers').textContent = data.uniqueUsers.toLocaleString();
-        document.getElementById('totalLikes').textContent = data.totalLikes.toLocaleString();
+        /* Update Key Metrics */
+        document.getElementById('totalUsers').textContent = (data.totalUsers || 0).toLocaleString();
+        document.getElementById('totalVisits').textContent = (data.totalVisits || 0).toLocaleString();
+        document.getElementById('articlesViewed').textContent = (data.articlesViewed || 0).toLocaleString();
+        document.getElementById('aiUsage').textContent = (data.aiUsage || 0).toLocaleString();
 
         /* Destroy old charts */
         activeCharts.forEach(c => c.destroy());
         activeCharts = [];
 
-        /* Sources Chart */
-        if (data.sources && data.sources.labels.length > 0) {
-          const ctx = document.getElementById('sourcesChart').getContext('2d');
+        const chartOptions = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { color: 'var(--text-secondary)' } } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'var(--border)' }, ticks: { color: 'var(--text-secondary)' } },
+            x: { grid: { display: false }, ticks: { color: 'var(--text-secondary)' } }
+          }
+        };
+
+        /* Device Chart */
+        if (data.devices && data.devices.labels.length > 0) {
+          const ctx = document.getElementById('deviceChart').getContext('2d');
           const chart = new Chart(ctx, {
-            type: 'bar',
+            type: 'doughnut',
             data: {
-              labels: data.sources.labels,
+              labels: data.devices.labels,
               datasets: [{
-                label: 'Articles',
-                data: data.sources.values,
-                backgroundColor: 'var(--accent-2)',
-                borderRadius: 4
+                data: data.devices.values,
+                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
               }]
             },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                y: { beginAtZero: true, grid: { color: 'var(--border)' }, ticks: { color: 'var(--text-secondary)' } },
-                x: { grid: { display: false }, ticks: { color: 'var(--text-secondary)' } }
-              }
-            }
+            options: { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { position: 'bottom' } } }
           });
           activeCharts.push(chart);
         }
 
-        /* Dates Chart */
-        if (data.dates && data.dates.labels.length > 0) {
-          const ctx = document.getElementById('datesChart').getContext('2d');
+        /* Locations Chart */
+        if (data.locations && data.locations.labels.length > 0) {
+          const ctx = document.getElementById('locationsChart').getContext('2d');
+          const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: data.locations.labels.slice(0, 5),
+              datasets: [{
+                label: 'Users',
+                data: data.locations.values.slice(0, 5),
+                backgroundColor: '#3b82f6',
+                borderRadius: 4
+              }]
+            },
+            options: chartOptions
+          });
+          activeCharts.push(chart);
+        }
+
+        /* Gender Chart */
+        if (data.gender && data.gender.labels.length > 0) {
+          const ctx = document.getElementById('genderChart').getContext('2d');
+          const chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+              labels: data.gender.labels,
+              datasets: [{
+                data: data.gender.values,
+                backgroundColor: ['#ec4899', '#3b82f6', '#6b7280']
+              }]
+            },
+            options: { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { position: 'bottom' } } }
+          });
+          activeCharts.push(chart);
+        }
+
+        /* Age Chart */
+        if (data.ageGroups && data.ageGroups.labels.length > 0) {
+          const ctx = document.getElementById('ageChart').getContext('2d');
+          const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: data.ageGroups.labels,
+              datasets: [{
+                label: 'Users',
+                data: data.ageGroups.values,
+                backgroundColor: '#10b981',
+                borderRadius: 4
+              }]
+            },
+            options: chartOptions
+          });
+          activeCharts.push(chart);
+        }
+
+        /* AI Features Chart */
+        if (data.aiFeatures && data.aiFeatures.labels.length > 0) {
+          const ctx = document.getElementById('aiChart').getContext('2d');
+          const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: data.aiFeatures.labels,
+              datasets: [{
+                label: 'Usage Count',
+                data: data.aiFeatures.values,
+                backgroundColor: '#f59e0b',
+                borderRadius: 4
+              }]
+            },
+            options: chartOptions
+          });
+          activeCharts.push(chart);
+        }
+
+        /* Visits Trend */
+        if (data.visitsOverTime && data.visitsOverTime.labels.length > 0) {
+          const ctx = document.getElementById('visitsChart').getContext('2d');
           const chart = new Chart(ctx, {
             type: 'line',
             data: {
-              labels: data.dates.labels,
+              labels: data.visitsOverTime.labels,
               datasets: [{
-                label: 'Articles',
-                data: data.dates.values,
-                borderColor: 'var(--accent-2)',
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                label: 'Daily Visits',
+                data: data.visitsOverTime.values,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 borderWidth: 2,
                 fill: true,
                 tension: 0.4,
-                pointBackgroundColor: 'var(--accent-2)',
+                pointBackgroundColor: '#3b82f6',
                 pointBorderColor: '#fff'
               }]
             },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                y: { beginAtZero: true, grid: { color: 'var(--border)' }, ticks: { color: 'var(--text-secondary)' } },
-                x: { grid: { color: 'var(--border)' }, ticks: { color: 'var(--text-secondary)' } }
-              }
-            }
+            options: chartOptions
           });
           activeCharts.push(chart);
+        }
+
+        /* Browser Stats */
+        if (data.browsers) {
+          let html = '';
+          Object.entries(data.browsers).forEach(([browser, count]) => {
+            html += `<div class="stat-item"><span class="stat-label">${browser}</span><span class="stat-value">${count}</span></div>`;
+          });
+          document.getElementById('browserStats').innerHTML = html || '<div style="color: var(--text-secondary);">No data</div>';
+        }
+
+        /* Engagement Stats */
+        if (data.engagement) {
+          let html = '';
+          Object.entries(data.engagement).forEach(([key, value]) => {
+            const label = key.replace(/([A-Z])/g, ' $1').trim();
+            html += `<div class="stat-item"><span class="stat-label">${label}</span><span class="stat-value">${value}</span></div>`;
+          });
+          document.getElementById('engagementStats').innerHTML = html || '<div style="color: var(--text-secondary);">No data</div>';
+        }
+
+        /* Content Stats */
+        if (data.content) {
+          let html = '';
+          Object.entries(data.content).forEach(([key, value]) => {
+            const label = key.replace(/([A-Z])/g, ' $1').trim();
+            html += `<div class="stat-item"><span class="stat-label">${label}</span><span class="stat-value">${value}</span></div>`;
+          });
+          document.getElementById('contentStats').innerHTML = html || '<div style="color: var(--text-secondary);">No data</div>';
+        }
+
+        /* Location Table */
+        if (data.locationDetails && data.locationDetails.length > 0) {
+          let html = '';
+          data.locationDetails.slice(0, 10).forEach(loc => {
+            html += `<tr>
+              <td>${loc.location}</td>
+              <td>${loc.users}</td>
+              <td>${loc.visits}</td>
+              <td>${loc.avgDuration}s</td>
+            </tr>`;
+          });
+          document.getElementById('locationTableBody').innerHTML = html;
+        }
+
+        /* Articles Table */
+        if (data.topArticles && data.topArticles.length > 0) {
+          let html = '';
+          data.topArticles.slice(0, 10).forEach(article => {
+            html += `<tr>
+              <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">${article.title}</td>
+              <td>${article.views}</td>
+              <td>${article.likes}</td>
+              <td>${article.shares}</td>
+            </tr>`;
+          });
+          document.getElementById('articlesTableBody').innerHTML = html;
         }
       }
     });
