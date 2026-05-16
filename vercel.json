@@ -9,6 +9,8 @@
     { "source": "/sw.js", "destination": "/public/sw.js" },
     { "source": "/admin", "destination": "/public/admin.html" },
     { "source": "/admin.html", "destination": "/public/admin.html" },
-    { "source": "/admin.js", "destination": "/public/admin.js" }
+    { "source": "/admin.js", "destination": "/public/admin.js" },
+    { "source": "/analytics", "destination": "/public/analytics.html" },
+    { "source": "/analytics.html", "destination": "/public/analytics.html" }
   ]
 }

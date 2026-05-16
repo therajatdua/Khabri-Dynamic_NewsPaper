@@ -69,7 +69,7 @@ function getBody(req) {
 async function routeApi(req, res, url) {
     const pathname = url.pathname;
 
-    const apiMatch = pathname.match(/^\/api\/(news|summary|chat|admin)$/);
+    const apiMatch = pathname.match(/^\/api\/(news|summary|chat|admin|analytics)$/);
     if (!apiMatch) return false;
 
     const name = apiMatch[1];
@@ -148,6 +148,7 @@ async function routeStatic(_req, res, url) {
     let pathname = url.pathname;
     if (pathname === '/') pathname = '/index.html';
     else if (pathname === '/admin' || pathname === '/admin/') pathname = '/admin.html';
+    else if (pathname === '/analytics' || pathname === '/analytics/') pathname = '/analytics.html';
 
     const target = safeJoin(PUBLIC_DIR, pathname);
     if (!target) {

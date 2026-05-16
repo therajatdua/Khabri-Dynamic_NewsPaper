@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics - Khabri Dynamic NewsPaper</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Analytics Page Styling */
+    .analytics-wrapper {
+      min-height: calc(100vh - 150px);
+      padding: 40px 0;
+    }
+
+    /* Code Access Screen */
+    .code-access-view {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 60vh;
+    }
+    .code-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+    }
+    .code-card h2 {
+      margin-top: 0;
+      color: var(--text);
+      font-size: 24px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .code-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .code-input {
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 16px;
+      text-align: center;
+      letter-spacing: 2px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .code-input:focus {
+      border-color: var(--accent-2);
+    }
+    .code-btn {
+      background: var(--accent-2);
+      color: #fff;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .code-btn:hover { background: #2563eb; }
+    .code-error {
+      color: var(--accent);
+      font-size: 14px;
+      margin-top: 8px;
+      text-align: center;
+      display: none;
+    }
+
+    /* Dashboard Layout */
+    .dashboard-view { display: none; }
+    
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+    .dash-title {
+      margin: 0;
+      font-size: 32px;
+      color: var(--text);
+      letter-spacing: -0.03em;
+    }
+    .exit-btn {
+      background: var(--accent);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .exit-btn:hover { background: #dc2626; }
+    
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+    }
+    .metric-label {
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .metric-value {
+      color: var(--text);
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    /* Charts */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .chart-card h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: var(--text);
+      font-size: 18px;
+    }
+    .chart-container {
+      position: relative;
+      height: 300px;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="analytics-wrapper container">
+    <!-- Code Access Screen -->
+    <div id="codeAccessView" class="code-access-view">
+      <div class="code-card">
+        <h2>📊 Analytics</h2>
+        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 24px;">Enter access code</p>
+        <form id="codeForm" class="code-form">
+          <input 
+            id="accessCode" 
+            type="password" 
+            class="code-input" 
+            placeholder="••••" 
+            maxlength="4"
+            inputmode="numeric"
+            required
+          />
+          <button type="submit" class="code-btn">Access Analytics</button>
+          <div id="codeError" class="code-error"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboardView" class="dashboard-view">
+      <div class="dash-header">
+        <h1 class="dash-title">📊 Khabri Analytics Dashboard</h1>
+        <button id="exitBtn" class="exit-btn">Exit</button>
+      </div>
+
+      <!-- Metrics -->
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">Total Articles</div>
+          <div class="metric-value" id="totalArticles">-</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Unique Users</div>
+          <div class="metric-value" id="uniqueUsers">-</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Total Likes</div>
+          <div class="metric-value" id="totalLikes">-</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>Top News Sources</h3>
+          <div class="chart-container">
+            <canvas id="sourcesChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Articles Over Time (7 Days)</h3>
+          <div class="chart-container">
+            <canvas id="datesChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeCharts = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      /* Theme Configuration */
+      const themeToggle = document.getElementById('themeToggle');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const savedTheme = localStorage.getItem('khabri_theme');
+
+      if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        if (themeToggle) themeToggle.textContent = 'Light';
+      } else if (savedTheme === 'light') {
+        document.documentElement.removeAttribute('data-theme');
+        if (themeToggle) themeToggle.textContent = 'Dark';
+      } else if (prefersDark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        if (themeToggle) themeToggle.textContent = 'Light';
+      }
+
+      /* Analytics Logic */
+      const codeAccessView = document.getElementById('codeAccessView');
+      const dashboardView = document.getElementById('dashboardView');
+      const codeForm = document.getElementById('codeForm');
+      const codeError = document.getElementById('codeError');
+      const exitBtn = document.getElementById('exitBtn');
+      const accessCodeInput = document.getElementById('accessCode');
+
+      /* Check for cached code */
+      const cachedCode = sessionStorage.getItem('khabri_analytics_code');
+      if (cachedCode) {
+        fetchAnalytics(cachedCode);
+      }
+
+      codeForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const code = accessCodeInput.value.trim();
+        
+        const btn = codeForm.querySelector('button');
+        btn.textContent = 'Verifying...';
+        btn.disabled = true;
+        
+        fetchAnalytics(code);
+      });
+
+      exitBtn.addEventListener('click', () => {
+        sessionStorage.removeItem('khabri_analytics_code');
+        dashboardView.style.display = 'none';
+        codeAccessView.style.display = 'flex';
+        codeForm.reset();
+        codeForm.querySelector('button').textContent = 'Access Analytics';
+        codeForm.querySelector('button').disabled = false;
+        activeCharts.forEach(c => c.destroy());
+        activeCharts = [];
+      });
+
+      function fetchAnalytics(code) {
+        fetch('/api/analytics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        })
+        .then(async (res) => {
+          if (res.status === 401) throw new Error('Invalid code');
+          if (!res.ok) throw new Error('API error');
+          return res.json();
+        })
+        .then(data => {
+          sessionStorage.setItem('khabri_analytics_code', code);
+          codeError.style.display = 'none';
+          codeAccessView.style.display = 'none';
+          dashboardView.style.display = 'block';
+          
+          paintDashboard(data);
+        })
+        .catch(err => {
+          console.error(err);
+          sessionStorage.removeItem('khabri_analytics_code');
+          codeError.textContent = 'Invalid code. Try again.';
+          codeError.style.display = 'block';
+          const btn = codeForm.querySelector('button');
+          btn.textContent = 'Access Analytics';
+          btn.disabled = false;
+        });
+      }
+
+      function paintDashboard(data) {
+        document.getElementById('totalArticles').textContent = data.totalArticles.toLocaleString();
+        document.getElementById('uniqueUsers').textContent = data.uniqueUsers.toLocaleString();
+        document.getElementById('totalLikes').textContent = data.totalLikes.toLocaleString();
+
+        /* Destroy old charts */
+        activeCharts.forEach(c => c.destroy());
+        activeCharts = [];
+
+        /* Sources Chart */
+        if (data.sources && data.sources.labels.length > 0) {
+          const ctx = document.getElementById('sourcesChart').getContext('2d');
+          const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: data.sources.labels,
+              datasets: [{
+                label: 'Articles',
+                data: data.sources.values,
+                backgroundColor: 'var(--accent-2)',
+                borderRadius: 4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: { beginAtZero: true, grid: { color: 'var(--border)' }, ticks: { color: 'var(--text-secondary)' } },
+                x: { grid: { display: false }, ticks: { color: 'var(--text-secondary)' } }
+              }
+            }
+          });
+          activeCharts.push(chart);
+        }
+
+        /* Dates Chart */
+        if (data.dates && data.dates.labels.length > 0) {
+          const ctx = document.getElementById('datesChart').getContext('2d');
+          const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: data.dates.labels,
+              datasets: [{
+                label: 'Articles',
+                data: data.dates.values,
+                borderColor: 'var(--accent-2)',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'var(--accent-2)',
+                pointBorderColor: '#fff'
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: { beginAtZero: true, grid: { color: 'var(--border)' }, ticks: { color: 'var(--text-secondary)' } },
+                x: { grid: { color: 'var(--border)' }, ticks: { color: 'var(--text-secondary)' } }
+              }
+            }
+          });
+          activeCharts.push(chart);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
