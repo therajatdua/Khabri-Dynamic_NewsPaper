@@ -8,7 +8,16 @@ export default async function handler(req, res) {
         const { code } = req.body;
         const ANALYTICS_CODE = process.env.ANALYTICS_CODE || '2005';
 
-        if (!code || code !== ANALYTICS_CODE) {
+        // Debug logging
+        console.log('Code received:', code, 'Type:', typeof code);
+        console.log('ANALYTICS_CODE:', ANALYTICS_CODE, 'Type:', typeof ANALYTICS_CODE);
+
+        // Ensure both are strings and trim whitespace
+        const codeStr = String(code).trim();
+        const expectedCode = String(ANALYTICS_CODE).trim();
+
+        if (!codeStr || codeStr !== expectedCode) {
+            console.log('Code mismatch! Received:', codeStr, 'Expected:', expectedCode);
             return res.status(401).json({ error: 'Invalid code' });
         }
 
