@@ -3,15 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khabri -NewsWala | India & World News</title>
-    <meta name="description" content="Auto-updated India-first news with an AI assistant that can summarize and answer specific questions." />
+    <title>Khabri - Latest Breaking News India | 24/7 News Updates</title>
+    <meta name="description" content="Get the latest breaking news India and world updates. Live 24-hour coverage, trending top headlines, and AI summaries with Khabri - NewsWala." />
+    <meta name="keywords" content="latest news, breaking news India, 24 hour news, live news updates, Khabri News, Indian news headlines" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://khabri.therajatdua.com" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://khabri.therajatdua.com" />
+    <meta property="og:title" content="Khabri - Latest Breaking News India | 24/7 News Updates" />
+    <meta property="og:description" content="Get the latest breaking news India and world updates. Live 24-hour coverage, trending top headlines, and AI summaries with Khabri - NewsWala." />
+    <meta property="og:image" content="https://khabri.therajatdua.com/og-image.png" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://khabri.therajatdua.com" />
+    <meta property="twitter:title" content="Khabri - Latest Breaking News India | 24/7 News Updates" />
+    <meta property="twitter:description" content="Get the latest breaking news India and world updates. Live 24-hour coverage, trending top headlines, and AI summaries with Khabri - NewsWala." />
+    <meta property="twitter:image" content="https://khabri.therajatdua.com/og-image.png" />
+    
+    <!-- Font Awesome CDN for Footer Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <link rel="stylesheet" href="/styles.css">
+    
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "NewsMediaOrganization",
+      "name": "Khabri - NewsWala",
+      "url": "https://khabri.therajatdua.com",
+      "logo": "https://khabri.therajatdua.com/og-image.png",
+      "sameAs": [
+        "https://github.com/therajatdua/Khabri-Dynamic_NewsPaper"
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Khabri - NewsWala",
+      "url": "https://khabri.therajatdua.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://khabri.therajatdua.com/?search={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
 </head>
 <body>
     <header class="site-header">
         <div class="container header-inner">
             <div class="brand" id="brandLogo" style="cursor: pointer;" tabindex="0" role="button">
-                <div class="brand-mark">Khabri -NewsWala</div>
+                <h1 class="brand-mark">Khabri -NewsWala</h1>
                 <div class="brand-tag">India-first • Auto-updated • Global coverage</div>
             </div>
 
@@ -147,8 +199,20 @@
                 <div class="brand-mark">Khabri -NewsWala</div>
                 <p>Delivering top headlines and AI-powered insights, right to your screen.</p>
             </div>
-            <div class="footer-col" style="text-align: right;">
-                <p>&copy; 2026 Khabri-NewsWala. All rights reserved.</p>
+            <div class="footer-col footer-links">
+                <a href="https://github.com/rajatxdua" target="_blank" rel="noopener noreferrer" aria-label="GitHub Profile" title="Developer GitHub">
+                    <i class="fa-brands fa-github"></i> GitHub
+                </a>
+                <a href="https://instagram.com/therajatdua" target="_blank" rel="noopener noreferrer" aria-label="Instagram Profile" title="Developer Instagram">
+                    <i class="fa-brands fa-instagram"></i> Instagram
+                </a>
+                <a href="https://github.com/therajatdua/Khabri-Dynamic_NewsPaper" target="_blank" rel="noopener noreferrer" aria-label="Project Repository" title="Project Repository">
+                    <i class="fa-solid fa-code"></i> Project Repo
+                </a>
+            </div>
+            <div class="footer-col footer-copy" style="text-align: right;">
+                <p>Built by <a href="https://github.com/rajatxdua" target="_blank" rel="noopener noreferrer" class="dev-credit">Rajat Dua</a></p>
+                <p>&copy; <span id="currentYear"></span> Khabri-NewsWala. All rights reserved.</p>
             </div>
         </div>
     </footer>

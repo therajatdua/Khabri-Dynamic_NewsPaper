@@ -101,6 +101,7 @@ body {
     background: linear-gradient(135deg, var(--text), var(--muted));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    margin: 0;
 }
 .brand-tag {
     font-size: 11px;
@@ -724,6 +725,35 @@ body {
 }
 .footer-col p { margin: 8px 0 0; font-size: 14px; }
 .footer-col .brand-mark { font-size: 20px; }
+
+.footer-links {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+.footer-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 200ms ease, transform 200ms ease;
+}
+.footer-links a:hover {
+    color: var(--accent);
+    transform: translateY(-1px);
+}
+.dev-credit {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 200ms ease;
+}
+.dev-credit:hover {
+    color: var(--accent);
+}
 
 /* Responsive */
 @media (max-width: 1024px) {

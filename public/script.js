@@ -256,7 +256,7 @@
 
         els.hero.innerHTML = `
             <div class="hero-img-wrapper">
-                <img class="hero-img" src="${img}" alt="" loading="lazy" onerror="this.src='https://via.placeholder.com/1200x700?text=Khabri-NewsWala'" data-action="open-iframe" data-url="${article.url}" data-title="${escapeHtml(article.title)}" style="cursor:pointer;" />
+                <img class="hero-img" src="${img}" alt="${escapeHtml(article.title)}" loading="lazy" onerror="this.src='https://via.placeholder.com/1200x700?text=Khabri-NewsWala'" data-action="open-iframe" data-url="${article.url}" data-title="${escapeHtml(article.title)}" style="cursor:pointer;" />
             </div>
             <div class="hero-body">
                 <div class="meta">
@@ -264,7 +264,7 @@
                     <span>•</span>
                     <span>${escapeHtml(published)}</span>
                 </div>
-                <h1 class="hero-title"><a href="${article.url}" data-action="open-iframe" data-title="${escapeHtml(article.title)}" onclick="event.preventDefault()">${escapeHtml(article.title)}</a></h1>
+                <h2 class="hero-title"><a href="${article.url}" data-action="open-iframe" data-title="${escapeHtml(article.title)}" onclick="event.preventDefault()">${escapeHtml(article.title)}</a></h2>
                 <p class="hero-desc">${escapeHtml(desc)}</p>
                 <div class="hero-actions">
                     <button class="btn subtle" type="button" data-action="open-iframe" data-url="${article.url}" data-title="${escapeHtml(article.title)}">Read</button>
@@ -282,7 +282,7 @@
             return `
                 <article class="card" data-action="open-iframe" data-url="${a.url}" data-title="${escapeHtml(a.title)}">
                     <div class="card-img-wrapper">
-                        <img class="card-img" src="${img}" alt="" loading="lazy" onerror="this.src='https://via.placeholder.com/800x500?text=Khabri-NewsWala'" />
+                        <img class="card-img" src="${img}" alt="${escapeHtml(a.title)}" loading="lazy" onerror="this.src='https://via.placeholder.com/800x500?text=Khabri-NewsWala'" />
                     </div>
                     <div class="card-body">
                         <div class="meta">
@@ -626,6 +626,12 @@
     }
 
     async function start() {
+        // Set dynamic year in footer
+        const yearEl = document.getElementById('currentYear');
+        if (yearEl) {
+            yearEl.textContent = new Date().getFullYear();
+        }
+
         applyTheme(getPreferredTheme());
         await cleanupServiceWorkers();
         bindEvents();
