@@ -45,9 +45,21 @@ const CONTENT_TYPES = {
     '.txt': 'text/plain; charset=utf-8'
 };
 
+// Mirror the production security headers from vercel.json so CSP issues show up locally.
+const SECURITY_HEADERS = (() => {
+    try {
+        const cfg = JSON.parse(readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'vercel.json'), 'utf8'));
+        const all = (cfg.headers || []).find(h => h.source === '/(.*)');
+        return Object.fromEntries((all?.headers || []).map(h => [h.key, h.value]));
+    } catch {
+        return {};
+    }
+})();
+
 function send(res, statusCode, body, headers = {}) {
     res.writeHead(statusCode, {
         'Cache-Control': 'no-store',
+        ...SECURITY_HEADERS,
         ...headers
     });
     res.end(body);
@@ -69,7 +81,7 @@ function getBody(req) {
 async function routeApi(req, res, url) {
     const pathname = url.pathname;
 
-    const apiMatch = pathname.match(/^\/api\/(news|summary|chat|analytics)$/);
+    const apiMatch = pathname.match(/^\/api\/(news|summary|chat|brief|ingest|analytics)$/);
     if (!apiMatch) return false;
 
     const name = apiMatch[1];
@@ -102,7 +114,7 @@ async function routeApi(req, res, url) {
         method: req.method,
         query,
         body: bodyObj,
-        headers: req.headers
+        headers: { ...req.headers, 'x-forwarded-for': req.socket.remoteAddress || '' }
     };
 
     const vercelRes = {
@@ -181,7 +193,7 @@ function startListening(startPort, attemptsLeft) {
         // eslint-disable-next-line no-console
         console.log(`Khabri -NewsWala dev server running: http://localhost:${port}`);
         // eslint-disable-next-line no-console
-        console.log('API endpoints: /api/news, /api/summary, /api/chat');
+        console.log('API endpoints: /api/news, /api/summary, /api/chat, /api/brief, /api/ingest, /api/analytics');
     };
 
     const onError = (err) => {

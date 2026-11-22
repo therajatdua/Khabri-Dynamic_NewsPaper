@@ -2,7 +2,8 @@
   "name": "khabari-api-integration",
   "version": "1.0.0",
   "description": "A responsive news aggregator with dynamic API integration",
-  "main": "public/index.html",
+  "main": "dev-server.mjs",
+  "type": "module",
   "scripts": {
     "dev": "node dev-server.mjs",
     "start": "node dev-server.mjs",

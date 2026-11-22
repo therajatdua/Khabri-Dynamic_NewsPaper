@@ -1,0 +1,36 @@
+# Refreshes the news database every 10 minutes by calling /api/ingest.
+# Setup: repo Settings -> Secrets and variables -> Actions -> add
+#   INGEST_URL  = https://<your-site>/api/ingest
+#   CRON_SECRET = same value as CRON_SECRET in Vercel
+# GitHub may start scheduled runs a few minutes late, and pauses schedules in
+# repos with no commits for 60 days (re-enable from the Actions tab).
+name: Ingest news
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Call ingest endpoint
+        env:
+          INGEST_URL: ${{ secrets.INGEST_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$INGEST_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "INGEST_URL / CRON_SECRET secrets not set; skipping."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error --max-time 90 \
+            -H "Authorization: Bearer $CRON_SECRET" "$INGEST_URL"
+          echo

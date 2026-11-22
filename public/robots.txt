@@ -1,5 +1,6 @@
 User-agent: *
-Disallow: /analytics.html
+Disallow: /analytics
+Disallow: /api/
 Allow: /
 
 Sitemap: https://khabri.therajatdua.com/sitemap.xml

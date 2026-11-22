@@ -27,6 +27,12 @@
     <!-- Font Awesome CDN for Footer Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <meta name="theme-color" content="#ef4444" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="/styles.css">
     
     <!-- JSON-LD Structured Data -->
@@ -60,24 +66,27 @@
     </script>
 </head>
 <body>
+    <a class="skip-link" href="#feed">Skip to stories</a>
+
     <header class="site-header">
         <div class="container header-inner">
-            <div class="brand" id="brandLogo" style="cursor: pointer;" tabindex="0" role="button">
-                <h1 class="brand-mark">Khabri -NewsWala</h1>
-                <div class="brand-tag">India-first • Auto-updated • Global coverage</div>
-            </div>
+            <a class="brand" id="brandLogo" href="/" aria-label="Khabri NewsWala home">
+                <span class="brand-mark">Khabri -NewsWala</span>
+                <span class="brand-tag">India-first • Auto-updated • Made for you</span>
+            </a>
 
-            <form class="search" id="searchForm" autocomplete="off">
-                <input id="searchInput" type="search" placeholder="Search within the latest headlines…" aria-label="Search news" />
+            <form class="search" id="searchForm" role="search" autocomplete="off">
+                <input id="searchInput" type="search" placeholder="Search news, people, topics…  ( / )" aria-label="Search news" maxlength="100" />
                 <button class="btn" type="submit">Search</button>
             </form>
 
             <div class="header-meta">
                 <div class="header-actions">
                     <div class="pill-group" role="group" aria-label="Region">
-                        <button class="pill is-active" id="regionIndia" type="button">India</button>
-                        <button class="pill" id="regionWorld" type="button">World</button>
+                        <button class="pill is-active" id="regionIndia" type="button" aria-pressed="true">India</button>
+                        <button class="pill" id="regionWorld" type="button" aria-pressed="false">World</button>
                     </div>
+                    <button class="theme-toggle" id="prefsBtn" type="button" aria-label="Personalize your feed">✦ Personalize</button>
                     <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">Dark</button>
                 </div>
                 <div class="updated">
@@ -88,26 +97,62 @@
         </div>
     </header>
 
-    <nav class="category-nav" aria-label="Categories">
+    <nav class="category-nav" aria-label="Sections">
         <div class="container category-inner" id="categoryNav">
-            <button class="cat is-active" data-cat="general" type="button">Top</button>
+            <button class="cat cat-foryou is-active" data-cat="foryou" type="button">✦ For You</button>
+            <button class="cat" data-cat="general" type="button">Top</button>
             <button class="cat" data-cat="technology" type="button">Tech</button>
             <button class="cat" data-cat="business" type="button">Business</button>
             <button class="cat" data-cat="sports" type="button">Sports</button>
             <button class="cat" data-cat="health" type="button">Health</button>
             <button class="cat" data-cat="science" type="button">Science</button>
             <button class="cat" data-cat="entertainment" type="button">Entertainment</button>
+            <button class="cat cat-saved" data-cat="saved" type="button">🔖 Saved <span class="count" id="savedCount" hidden></span></button>
         </div>
     </nav>
 
-    <main class="container layout" aria-live="polite">
-        <section class="main" aria-label="Top stories">
-            <div class="skeleton" id="skeleton">
+    <button class="new-pill" id="newPill" type="button" hidden>↑ <span id="newPillText">New stories</span></button>
+
+    <main class="container layout" id="feed">
+        <section class="main" aria-labelledby="sectionTitle">
+            <div class="sr-only" id="liveStatus" role="status" aria-live="polite"></div>
+
+            <div class="banner banner-warn" id="archivedBanner" hidden>
+                <strong>Live feed unavailable.</strong> Showing archived headlines — they may be out of date.
+            </div>
+
+            <div class="banner banner-info" id="sinceBanner" hidden></div>
+
+            <div class="onboard-card" id="onboardCard" hidden>
+                <div>
+                    <div class="onboard-title">Make Khabri yours</div>
+                    <p>Pick topics and follow keywords like “IPL”, “ISRO” or “Sensex”. Your feed learns from what you read — all stored on your device.</p>
+                </div>
+                <div class="onboard-actions">
+                    <button class="btn" type="button" data-action="open-prefs">Personalize (30 sec)</button>
+                    <button class="btn subtle" type="button" data-action="dismiss-onboard">Not now</button>
+                </div>
+            </div>
+
+            <section class="brief-card" id="briefCard" hidden aria-labelledby="briefTitle">
+                <div class="brief-head">
+                    <div>
+                        <div class="brief-kicker" id="briefKicker">Daily briefing</div>
+                        <h2 class="brief-title" id="briefTitle">5 stories to know right now</h2>
+                    </div>
+                    <div class="brief-actions">
+                        <button class="btn subtle" type="button" id="briefListenBtn" aria-pressed="false">▶ Listen</button>
+                        <button class="icon-btn" type="button" data-action="dismiss-brief" aria-label="Hide briefing until tomorrow" title="Hide until tomorrow">×</button>
+                    </div>
+                </div>
+                <ol class="brief-list" id="briefList"></ol>
+                <button class="link-btn brief-more" type="button" data-action="expand-brief">Show 2 more</button>
+                <p class="brief-foot" id="briefFoot"></p>
+            </section>
+
+            <div class="skeleton" id="skeleton" aria-hidden="true">
                 <div class="sk sk-hero"></div>
-                <div class="sk sk-line"></div>
-                <div class="sk sk-line short"></div>
                 <div class="sk sk-grid">
-                    <div class="sk sk-card"></div>
                     <div class="sk sk-card"></div>
                     <div class="sk sk-card"></div>
                     <div class="sk sk-card"></div>
@@ -117,16 +162,21 @@
             <article class="hero" id="hero" hidden></article>
 
             <div class="section-head">
-                <h2 id="sectionTitle">Latest</h2>
-                <button class="btn subtle" id="refreshBtn" type="button">Refresh</button>
+                <h2 id="sectionTitle">For You</h2>
+                <div class="section-actions">
+                    <button class="btn subtle" id="followQueryBtn" type="button" hidden>＋ Follow</button>
+                    <button class="btn subtle" id="refreshBtn" type="button">Refresh</button>
+                </div>
             </div>
             <div class="grid" id="grid" hidden></div>
+            <div class="empty" id="emptyState" hidden></div>
+            <button class="btn subtle load-more" id="loadMoreBtn" type="button" hidden>Load more stories</button>
         </section>
 
-        <aside class="side" aria-label="Daily quick news">
+        <aside class="side" aria-label="Sidebar">
             <div class="side-card">
                 <div class="side-head">
-                    <h3>Daily Quick News</h3>
+                    <h3>Trending Now</h3>
                     <span class="live-dot" title="Auto-updating"></span>
                 </div>
                 <ol class="quick" id="quick"></ol>
@@ -134,64 +184,91 @@
 
             <div class="side-card">
                 <div class="side-head">
-                    <h3>Tips</h3>
+                    <h3>Your Interests</h3>
+                    <button class="link-btn" type="button" data-action="open-prefs">Edit</button>
                 </div>
-                <p class="hint">Click <strong>Summarize</strong> on any story. Use the AI assistant for specific questions like “What’s happening in Indian tech today?”</p>
+                <div class="chips" id="interestChips"></div>
+            </div>
+
+            <div class="side-card">
+                <div class="side-head"><h3>Tips</h3></div>
+                <p class="hint">Tap any story for an instant AI summary. Press <kbd>/</kbd> to search, save stories with 🔖, and ask the AI assistant things like “What’s happening in Indian tech today?”</p>
             </div>
         </aside>
     </main>
 
-    <!-- Summary modal -->
-    <div class="modal" id="summaryModal" aria-hidden="true">
-        <div class="modal-backdrop" data-close="true"></div>
-        <div class="modal-card" role="dialog" aria-modal="true" aria-label="AI Summary">
+    <!-- Story sheet (replaces the iframe reader; most news sites block embedding) -->
+    <dialog class="sheet" id="storySheet" aria-labelledby="sheetTitle">
+        <div class="sheet-inner" id="sheetContent"></div>
+    </dialog>
+
+    <!-- Personalization -->
+    <dialog class="prefs" id="prefsDialog" aria-labelledby="prefsTitle">
+        <form method="dialog" class="prefs-inner" id="prefsForm">
             <div class="modal-head">
-                <div class="modal-title">AI Summary</div>
-                <button class="icon-btn" data-close="true" aria-label="Close">×</button>
+                <div class="modal-title" id="prefsTitle">Personalize your feed</div>
+                <button class="icon-btn" value="cancel" formnovalidate aria-label="Close">×</button>
             </div>
-            <div class="modal-body">
-                <div class="modal-story" id="summaryStory"></div>
-                <div class="modal-text" id="summaryText">Loading…</div>
+            <div class="prefs-body">
+                <fieldset>
+                    <legend>Topics you care about</legend>
+                    <div class="chip-picker" id="topicPicker"></div>
+                </fieldset>
+                <fieldset>
+                    <legend>Follow keywords <span class="muted">(up to 5)</span></legend>
+                    <div class="follow-row">
+                        <input id="followInput" type="text" maxlength="40" placeholder="e.g. IPL, ISRO, Sensex, Bollywood" aria-label="Add keyword to follow" />
+                        <button class="btn subtle" type="button" id="followAddBtn">Add</button>
+                    </div>
+                    <div class="chips" id="followChips"></div>
+                </fieldset>
+                <fieldset class="inline-fields">
+                    <label>Region
+                        <select id="prefRegion">
+                            <option value="in">India</option>
+                            <option value="world">World</option>
+                        </select>
+                    </label>
+                    <label>Language
+                        <select id="prefLang">
+                            <option value="en">English</option>
+                            <option value="hi">हिन्दी (Hindi)</option>
+                        </select>
+                    </label>
+                </fieldset>
+                <fieldset id="mutedField" hidden>
+                    <legend>Hidden sources</legend>
+                    <div class="chips" id="mutedChips"></div>
+                </fieldset>
+                <p class="hint">Saved only in this browser. <button class="link-btn" type="button" id="resetPrefsBtn">Reset personalization</button></p>
             </div>
-        </div>
-    </div>
+            <div class="prefs-foot">
+                <button class="btn" value="save" id="prefsSaveBtn">Save &amp; build my feed</button>
+            </div>
+        </form>
+    </dialog>
 
     <!-- Floating AI assistant -->
-        <button class="fab" id="botToggle" aria-label="Open AI assistant">AI</button>
+    <button class="fab" id="botToggle" aria-label="Open AI assistant" aria-expanded="false" aria-controls="bot">AI</button>
     <section class="bot" id="bot" aria-label="AI assistant" hidden>
         <div class="bot-head">
             <div>
                 <div class="bot-title">Khabri -NewsWala AI</div>
-                <div class="bot-sub">Summaries + specific details (India & World)</div>
+                <div class="bot-sub">Answers from the headlines on screen</div>
             </div>
             <div class="bot-actions">
                 <button class="btn subtle" id="readBriefBtn" type="button">Listen</button>
                 <button class="icon-btn" id="botClose" type="button" aria-label="Close assistant">×</button>
             </div>
         </div>
-        <div class="bot-body" id="botMessages"></div>
+        <div class="bot-body" id="botMessages" aria-live="polite"></div>
         <form class="bot-input" id="botForm">
-            <input id="botInput" type="text" placeholder="Ask about the latest news…" aria-label="Ask the assistant" />
+            <input id="botInput" type="text" maxlength="400" placeholder="Ask about the latest news…" aria-label="Ask the assistant" />
             <button class="btn" type="submit">Send</button>
         </form>
     </section>
 
-    <!-- Iframe Modal -->
-    <div class="modal" id="iframeModal" aria-hidden="true">
-        <div class="modal-backdrop" data-close-iframe="true"></div>
-        <div class="modal-card iframe-card" role="dialog" aria-modal="true" aria-label="Full News">
-            <div class="modal-head">
-                <div class="modal-title" id="iframeTitle" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;">Loading News...</div>
-                <div style="display:flex;gap:8px;">
-                    <a class="icon-btn" id="iframeExternalLink" href="#" target="_blank" rel="noreferrer" title="Open in new tab" style="text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:14px;">↗</a>
-                    <button class="icon-btn" data-close-iframe="true" aria-label="Close">×</button>
-                </div>
-            </div>
-            <div class="modal-body p-0" style="padding:0; height: calc(100vh - 120px);">
-                <iframe id="newsIframe" class="news-iframe" src="about:blank" sandbox="allow-same-origin allow-scripts allow-popups allow-forms" title="News Content" style="width:100%; height:100%; border:none;"></iframe>
-            </div>
-        </div>
-    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
     <footer class="site-footer">
         <div class="container footer-inner">
@@ -210,7 +287,7 @@
                     <i class="fa-solid fa-code"></i> Project Repo
                 </a>
             </div>
-            <div class="footer-col footer-copy" style="text-align: right;">
+            <div class="footer-col footer-copy">
                 <p>Built by <a href="https://github.com/rajatxdua" target="_blank" rel="noopener noreferrer" class="dev-credit">Rajat Dua</a></p>
                 <p>&copy; <span id="currentYear"></span> Khabri-NewsWala. All rights reserved.</p>
             </div>
