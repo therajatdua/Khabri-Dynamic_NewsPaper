@@ -34,7 +34,7 @@ export async function db(path, { method = 'GET', body, prefer, timeoutMs = 3000 
         let data = null;
         try { data = text ? JSON.parse(text) : null; } catch { data = text; }
         if (!res.ok) console.warn(`supabase ${method} ${path.split('?')[0]} -> ${res.status} ${typeof data === 'object' ? data?.message || '' : ''}`);
-        return { ok: res.ok, status: res.status, data };
+        return { ok: res.ok, status: res.status, data, contentRange: res.headers.get('content-range') || '' };
     } catch (error) {
         console.warn(`supabase ${method} ${path.split('?')[0]} failed: ${error?.message}`);
         return { ok: false, status: 0, data: null };

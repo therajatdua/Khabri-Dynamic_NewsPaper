@@ -15,6 +15,14 @@
       "destination": "/public/script.js"
     },
     {
+      "source": "/theme-init.js",
+      "destination": "/public/theme-init.js"
+    },
+    {
+      "source": "/ui.js",
+      "destination": "/public/ui.js"
+    },
+    {
       "source": "/manifest.json",
       "destination": "/public/manifest.json"
     },
@@ -61,7 +69,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self' https://saurav.tech; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
+          "value": "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self' https://saurav.tech; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests"
         },
         {
           "key": "X-Content-Type-Options",
@@ -78,6 +86,18 @@
         {
           "key": "X-Frame-Options",
           "value": "DENY"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "X-Permitted-Cross-Domain-Policies",
+          "value": "none"
         }
       ]
     },
@@ -110,5 +130,6 @@
       "path": "/api/ingest",
       "schedule": "0 1 * * *"
     }
-  ]
+  ],
+  "redirects": []
 }

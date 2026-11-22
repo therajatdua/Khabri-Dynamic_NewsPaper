@@ -125,6 +125,11 @@
         archivedBanner: $('archivedBanner'),
         sinceBanner: $('sinceBanner'),
         onboardCard: $('onboardCard'),
+        regionGroup: $('regionGroup'),
+        menuRegion: $('menuRegion'),
+        clearSavedBtn: $('clearSavedBtn'),
+        feedEnd: $('feedEnd'),
+        footerUpdated: $('footerUpdated'),
         briefCard: $('briefCard'),
         briefKicker: $('briefKicker'),
         briefList: $('briefList'),
@@ -181,6 +186,11 @@
     }
 
     // Only allow http(s) URLs into the DOM (blocks javascript:, data:, etc).
+    const UI = () => window.KhabriUI || null;
+    const icon = (name, cls = 'ic') => `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+    const outbound = (url) => (UI() ? UI().outbound(url) : url);
+    const loaderHtml = (label, opts) => (UI() ? UI().loader(label, opts) : escapeHtml(label));
+
     function safeUrl(value) {
         try {
             const u = new URL(safeText(value));
@@ -258,6 +268,9 @@
     function toast(msg) {
         els.toast.textContent = msg;
         els.toast.hidden = false;
+        els.toast.style.animation = 'none';
+        void els.toast.offsetWidth;
+        els.toast.style.animation = '';
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => { els.toast.hidden = true; }, 2600);
     }
@@ -497,8 +510,9 @@
     // ------------------------------------------------------------------
     const isSaved = (id) => state.saved.some(s => s.id === id);
 
-    function toggleSave(article) {
-        if (isSaved(article.id)) {
+    function toggleSave(article, fromBtn) {
+        const wasSaved = isSaved(article.id);
+        if (wasSaved) {
             state.saved = state.saved.filter(s => s.id !== article.id);
             toast('Removed from saved');
         } else {
@@ -509,14 +523,33 @@
             toast('Saved — find it under 🔖 Saved');
         }
         store.set(STORE.saved, state.saved);
-        updateSavedCount();
         document.querySelectorAll(`[data-save="${article.id}"]`).forEach(btn => {
             const on = isSaved(article.id);
             btn.classList.toggle('is-on', on);
             btn.setAttribute('aria-pressed', String(on));
             btn.setAttribute('aria-label', on ? 'Remove from saved' : 'Save story');
         });
+        if (!wasSaved && fromBtn) {
+            // Exaggerated pop + burst on the button, then the bookmark arcs to the Saved tab.
+            fromBtn.classList.remove('pop');
+            void fromBtn.offsetWidth;
+            fromBtn.classList.add('pop');
+            UI()?.burst(fromBtn);
+            const target = document.querySelector('.cat-saved');
+            const r = target?.getBoundingClientRect();
+            const visible = r && r.width && r.right > 0 && r.left < window.innerWidth && r.bottom > 0 && r.top < window.innerHeight && !els.storySheet.open;
+            const fly = visible && UI() ? UI().flyTo(fromBtn, target) : Promise.resolve();
+            fly.then(() => { updateSavedCount(); bumpSavedCount(); });
+        } else {
+            updateSavedCount();
+        }
         if (state.view === 'saved') refresh();
+    }
+
+    function bumpSavedCount() {
+        els.savedCount.classList.remove('bump');
+        void els.savedCount.offsetWidth;
+        els.savedCount.classList.add('bump');
     }
 
     function updateSavedCount() {
@@ -544,7 +577,7 @@
 
     function saveBtn(a, extraClass = '') {
         const on = isSaved(a.id);
-        return `<button class="icon-btn save-btn ${extraClass} ${on ? 'is-on' : ''}" type="button" data-save="${a.id}" aria-pressed="${on}" aria-label="${on ? 'Remove from saved' : 'Save story'}">🔖</button>`;
+        return `<button class="icon-btn save-btn ${extraClass} ${on ? 'is-on' : ''}" type="button" data-save="${a.id}" aria-pressed="${on}" aria-label="${on ? 'Remove from saved' : 'Save story'}">${icon('bookmark')}</button>`;
     }
 
     function renderHero(a) {
@@ -556,30 +589,31 @@
             </div>
             <div class="hero-body">
                 <div class="meta">${metaLine(a)} ${badges(a)}</div>
-                <h2 class="hero-title"><a href="${escapeHtml(a.url)}" data-open="${a.id}" class="stretched">${escapeHtml(a.title)}</a></h2>
+                <h2 class="hero-title"><a href="${escapeHtml(outbound(a.url))}" data-src="${escapeHtml(a.url)}" data-open="${a.id}" class="stretched">${escapeHtml(a.title)}</a></h2>
                 <p class="hero-desc">${escapeHtml(a.description)}</p>
                 <div class="hero-actions">
-                    <button class="btn" type="button" data-open="${a.id}">AI summary</button>
+                    <button class="btn" type="button" data-open="${a.id}">${icon('sparkle', 'ic ic-sm')}AI summary</button>
                     ${saveBtn(a, 'on-dark')}
+                    <button class="icon-btn" type="button" data-share="${a.id}" aria-label="Share story">${icon('share')}</button>
                 </div>
             </div>`;
     }
 
-    function cardHtml(a) {
+    function cardHtml(a, i = 0) {
         return `
-            <article class="card ${state.read[a.id] ? 'is-read' : ''}" data-card="${a.id}">
+            <article class="card specular enter ${state.read[a.id] ? 'is-read' : ''}" data-card="${a.id}" style="--i:${Math.min(i, 8)}">
                 <div class="card-img-wrapper">
                     <img class="card-img" src="${escapeHtml(a.image || FALLBACK_IMG)}" alt="" loading="lazy" decoding="async" />
                 </div>
                 <div class="card-body">
                     <div class="meta">${metaLine(a)}</div>
                     <div class="badges">${badges(a)}</div>
-                    <h3 class="card-title"><a href="${escapeHtml(a.url)}" data-open="${a.id}" class="stretched">${escapeHtml(a.title)}</a></h3>
+                    <h3 class="card-title"><a href="${escapeHtml(outbound(a.url))}" data-src="${escapeHtml(a.url)}" data-open="${a.id}" class="stretched">${escapeHtml(a.title)}</a></h3>
                     <p class="card-desc">${escapeHtml(a.description)}</p>
                     <div class="card-actions">
-                        <button class="btn subtle" type="button" data-open="${a.id}">AI summary</button>
+                        <button class="btn" type="button" data-open="${a.id}">${icon('sparkle', 'ic ic-sm')}Summary</button>
                         ${saveBtn(a)}
-                        <button class="icon-btn" type="button" data-share="${a.id}" aria-label="Share story">↗</button>
+                        <button class="icon-btn" type="button" data-share="${a.id}" aria-label="Share story">${icon('share')}</button>
                     </div>
                 </div>
             </article>`;
@@ -587,9 +621,52 @@
 
     function renderMore() {
         const next = state.list.slice(state.shown, state.shown + PAGE_SIZE);
-        els.grid.insertAdjacentHTML('beforeend', next.map(cardHtml).join(''));
+        els.grid.insertAdjacentHTML('beforeend', next.map((a, i) => cardHtml(a, i)).join(''));
         state.shown += next.length;
         els.loadMoreBtn.hidden = state.shown >= state.list.length;
+        updateFeedEnd();
+    }
+
+    // Peak-end: a clear, satisfying ending instead of a dead stop.
+    function updateFeedEnd() {
+        const done = state.list.length > 0 && state.shown >= state.list.length && state.view !== 'saved';
+        els.feedEnd.hidden = !done;
+        if (!done) { els.feedEnd.innerHTML = ''; return; }
+        if (els.feedEnd.dataset.count === String(state.list.length) && els.feedEnd.innerHTML) return;
+        els.feedEnd.dataset.count = String(state.list.length);
+        const outlets = new Set(state.list.map(a => a.sourceName)).size;
+        els.feedEnd.innerHTML = `
+            <div class="check-badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div>
+            <h3>You’re all caught up</h3>
+            <p>${state.list.length} stories from ${outlets} ${outlets === 1 ? 'outlet' : 'outlets'}. New stories arrive every few minutes.</p>
+            <div class="feed-end-actions">
+                <button class="btn subtle lg" type="button" data-action="back-to-top">${icon('arrow-up', 'ic ic-sm')}Back to top</button>
+                ${state.view !== 'foryou' || state.query ? `<button class="btn lg" type="button" data-action="go-foryou">${icon('sparkle', 'ic ic-sm')}Your For You feed</button>` : `<button class="btn lg" type="button" data-action="open-prefs">${icon('sliders', 'ic ic-sm')}Tune your feed</button>`}
+            </div>`;
+    }
+
+    // Relative times tick so "Updated 3m ago" never goes stale.
+    function tickTimes() {
+        document.querySelectorAll('#feed time[datetime], #footerUpdated[datetime], #lastUpdated[datetime]').forEach(t => {
+            const iso = t.getAttribute('datetime');
+            const rel = relTime(iso);
+            if (rel) t.textContent = rel;
+        });
+    }
+
+    function setUpdated(iso, archived) {
+        [els.lastUpdated, els.footerUpdated].forEach(t => {
+            if (!t) return;
+            if (iso) {
+                t.setAttribute('datetime', iso);
+                t.textContent = relTime(iso) || 'just now';
+                t.title = new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+            } else {
+                t.removeAttribute('datetime');
+                t.textContent = archived ? 'from saved copy' : '—';
+                t.removeAttribute('title');
+            }
+        });
     }
 
     function renderQuick(list) {
@@ -651,12 +728,11 @@
         els.followQueryBtn.textContent = `＋ Follow “${state.query}”`;
         els.onboardCard.hidden = state.prefs.onboarded || state.prefs.dismissed || state.view !== 'foryou' || !!state.query;
 
-        if (result.fetchedAt) {
-            els.lastUpdated.textContent = relTime(result.fetchedAt);
-            els.lastUpdated.setAttribute('datetime', result.fetchedAt);
-        } else {
-            els.lastUpdated.textContent = result.archived ? 'archived' : '—';
-        }
+        setUpdated(result.fetchedAt, result.archived);
+        els.lastUpdated.parentElement.hidden = state.view === 'saved';
+        els.clearSavedBtn.hidden = !(state.view === 'saved' && state.saved.length);
+        els.refreshBtn.hidden = state.view === 'saved';
+        els.feedEnd.dataset.count = '';
 
         els.grid.innerHTML = '';
         els.emptyState.hidden = true;
@@ -767,6 +843,7 @@
             els.grid.hidden = true;
             els.emptyState.hidden = true;
             els.loadMoreBtn.hidden = true;
+            els.feedEnd.hidden = true;
             els.newPill.hidden = true;
             state.pending = null;
         }
@@ -842,6 +919,13 @@
         els.regionWorld.classList.toggle('is-active', state.region !== 'in');
         els.regionIndia.setAttribute('aria-pressed', String(state.region === 'in'));
         els.regionWorld.setAttribute('aria-pressed', String(state.region !== 'in'));
+        const regionValue = state.region === 'in' ? 'in' : 'world';
+        [els.regionGroup, els.menuRegion].forEach(g => { if (g) g.dataset.value = regionValue; });
+        els.menuRegion?.querySelectorAll('[data-region]').forEach(b => {
+            const on = b.dataset.region === regionValue;
+            b.classList.toggle('is-active', on);
+            b.setAttribute('aria-pressed', String(on));
+        });
         els.categoryNav.querySelectorAll('.cat').forEach(btn => {
             const on = !state.query && btn.dataset.cat === state.view;
             btn.classList.toggle('is-active', on);
@@ -908,9 +992,12 @@
             ? `<div class="sheet-section"><div class="sheet-label">Related stories</div><ul class="related-list">${rel.map(r => `<li><a href="${escapeHtml(r.url)}" data-open="${r.id}">${escapeHtml(r.title)}</a><span class="quick-meta">${escapeHtml(r.sourceName)} · ${escapeHtml(relTime(r.publishedAt))}</span></li>`).join('')}</ul></div>`
             : '';
 
+        const href = escapeHtml(outbound(a.url));
         els.sheetContent.innerHTML = `
+            <div class="sheet-grip" aria-hidden="true"></div>
             <div class="sheet-head">
-                <button class="icon-btn" type="button" data-close-sheet aria-label="Close story">×</button>
+                <button class="icon-btn" type="button" data-action="print-story" aria-label="Print story">${icon('printer', 'ic ic-sm')}</button>
+                <button class="icon-btn" type="button" data-close-sheet aria-label="Close story">${icon('close', 'ic ic-sm')}</button>
             </div>
             <div class="sheet-scroll">
                 <img class="sheet-img" src="${escapeHtml(a.image || FALLBACK_IMG)}" alt="" />
@@ -918,14 +1005,18 @@
                     <div class="meta">${metaLine(a)} ${badges(a)}</div>
                     <h2 class="sheet-title" id="sheetTitle">${escapeHtml(a.title)}</h2>
                     <div class="ai-box">
-                        <div class="sheet-label">✦ AI summary</div>
-                        <p id="sheetSummary" class="ai-text is-loading">Summarizing…</p>
+                        <div class="sheet-label"><span>✦ AI summary</span>
+                            <button class="icon-btn copy-btn" type="button" data-copy-target="#sheetSummary" data-copy-message="Summary copied" aria-label="Copy summary" hidden>${icon('copy', 'ic ic-sm ic-copy')}${icon('check', 'ic ic-sm ic-check')}</button>
+                        </div>
+                        <div id="sheetSummary" class="ai-text is-loading">${loaderHtml('Summarizing', { size: 'sm', inline: true })}</div>
+                        <p class="ai-note">AI-generated from the publisher’s headline and description. It can make mistakes.</p>
                     </div>
                     ${a.description ? `<p class="sheet-desc">${escapeHtml(a.description)}</p>` : ''}
                     <div class="sheet-actions">
-                        <a class="btn" href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer">Read full story at ${escapeHtml(a.sourceName)} ↗</a>
+                        <a class="btn lg" href="${href}" target="_blank" rel="noopener noreferrer">Read at ${escapeHtml(a.sourceName)} ${icon('external', 'ic ic-sm')}</a>
                         ${saveBtn(a)}
-                        <button class="icon-btn" type="button" data-share="${a.id}" aria-label="Share story">↗</button>
+                        <button class="icon-btn" type="button" data-share="${a.id}" aria-label="Share story">${icon('share')}</button>
+                        <button class="icon-btn copy-btn" type="button" data-copy="${escapeHtml(a.url)}" data-copy-message="Link copied" aria-label="Copy link">${icon('link', 'ic ic-copy')}${icon('check', 'ic ic-check')}</button>
                     </div>
                     ${sources}
                     ${relHtml}
@@ -936,6 +1027,8 @@
                 </div>
             </div>`;
 
+        els.storySheet.classList.remove('is-closing');
+        els.storySheet.style.transform = '';
         if (!els.storySheet.open) els.storySheet.showModal();
         els.sheetContent.querySelector('.sheet-scroll').scrollTop = 0;
         els.sheetContent.querySelector('[data-close-sheet]').focus();
@@ -945,12 +1038,66 @@
             if (node && els.storySheet.open && $('sheetTitle')?.textContent === a.title) {
                 node.textContent = text; // always text, never HTML
                 node.classList.remove('is-loading');
+                const copy = els.sheetContent.querySelector('.ai-box .copy-btn');
+                if (copy) copy.hidden = !text;
             }
         });
     }
 
     function closeStory() {
-        if (els.storySheet.open) els.storySheet.close();
+        if (!els.storySheet.open) return;
+        if (UI()) UI().closeDialog(els.storySheet);
+        else els.storySheet.close();
+    }
+
+    // Phones: the sheet follows the finger; past the top it rubber-bands,
+    // dragged down far (or flicked) it dismisses, otherwise it springs back.
+    function enableSheetDrag() {
+        const sheet = els.storySheet;
+        let startY = 0, lastY = 0, lastT = 0, velocity = 0, dragging = false, dy = 0;
+        const rubber = (d, limit = 120) => (1 - 1 / ((d * 0.55) / limit + 1)) * limit;
+        const isPhone = () => window.matchMedia('(max-width: 760px)').matches;
+
+        sheet.addEventListener('pointerdown', (e) => {
+            if (!isPhone() || !e.target.closest('.sheet-grip, .sheet-img')) return;
+            dragging = true;
+            startY = lastY = e.clientY;
+            lastT = performance.now();
+            velocity = 0;
+            dy = 0;
+            sheet.classList.remove('is-settling');
+            sheet.classList.add('is-dragging');
+            sheet.setPointerCapture?.(e.pointerId);
+        });
+        sheet.addEventListener('pointermove', (e) => {
+            if (!dragging) return;
+            const now = performance.now();
+            velocity = (e.clientY - lastY) / Math.max(1, now - lastT);
+            lastY = e.clientY;
+            lastT = now;
+            const raw = e.clientY - startY;
+            dy = raw >= 0 ? raw : -rubber(-raw);
+            sheet.style.transform = `translateY(${dy}px)`;
+        });
+        const end = () => {
+            if (!dragging) return;
+            dragging = false;
+            sheet.classList.remove('is-dragging');
+            // The pointerup after a drag can land on the backdrop and fire a
+            // "click outside"; remember the drag so that click is ignored.
+            if (Math.abs(dy) > 4) sheet.dataset.draggedAt = String(Date.now());
+            if (dy > 120 || velocity > 0.7) {
+                sheet.classList.add('is-settling');
+                sheet.style.transform = 'translateY(100%)';
+                setTimeout(() => { sheet.classList.remove('is-settling'); sheet.close(); sheet.style.transform = ''; }, 220);
+            } else {
+                sheet.classList.add('is-settling');
+                sheet.style.transform = '';
+                setTimeout(() => sheet.classList.remove('is-settling'), 380);
+            }
+        };
+        sheet.addEventListener('pointerup', end);
+        sheet.addEventListener('pointercancel', end);
     }
 
     async function share(a) {
@@ -978,7 +1125,8 @@
         els.prefRegion.value = draft.region;
         els.prefLang.value = draft.lang;
         renderDraftChips();
-        els.prefsDialog.showModal();
+        if (UI()) UI().openDialog(els.prefsDialog);
+        else els.prefsDialog.showModal();
     }
 
     function renderDraftChips() {
@@ -1031,25 +1179,6 @@
     // ------------------------------------------------------------------
     // Theme
     // ------------------------------------------------------------------
-    function getPreferredTheme() {
-        let saved = '';
-        try { saved = safeText(localStorage.getItem(STORE.theme)); } catch { /* ignore */ }
-        if (saved === 'dark' || saved === 'light') return saved;
-        return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-
-    function applyTheme(theme) {
-        document.documentElement.dataset.theme = theme;
-        els.themeToggle.textContent = theme === 'dark' ? 'Light' : 'Dark';
-        els.themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
-    }
-
-    function toggleTheme() {
-        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-        try { localStorage.setItem(STORE.theme, next); } catch { /* ignore */ }
-        applyTheme(next);
-    }
-
     // ------------------------------------------------------------------
     // AI assistant
     // ------------------------------------------------------------------
@@ -1179,7 +1308,6 @@
     }
 
     function bindEvents() {
-        els.themeToggle.addEventListener('click', toggleTheme);
         els.prefsBtn.addEventListener('click', openPrefs);
 
         els.regionIndia.addEventListener('click', () => navigate({ region: 'in' }));
@@ -1203,7 +1331,16 @@
             navigate({ view: 'foryou', query: '', region: state.prefs.region });
         });
 
-        els.refreshBtn.addEventListener('click', () => { clearFeedCache(); refresh(); });
+        els.refreshBtn.addEventListener('click', () => {
+            els.refreshBtn.classList.remove('is-spinning');
+            void els.refreshBtn.offsetWidth;
+            els.refreshBtn.classList.add('is-spinning');
+            clearFeedCache();
+            refresh();
+        });
+        els.refreshBtn.addEventListener('animationend', () => els.refreshBtn.classList.remove('is-spinning'));
+        els.searchForm.addEventListener('search-clear', () => { if (state.query) navigate({ query: '' }); });
+        enableSheetDrag();
         els.loadMoreBtn.addEventListener('click', renderMore);
         els.newPill.addEventListener('click', applyPending);
         els.followQueryBtn.addEventListener('click', () => follow(state.query));
@@ -1223,8 +1360,11 @@
             }
         }, true);
 
-        document.addEventListener('click', (e) => {
+        document.addEventListener('click', async (e) => {
             const t = e.target;
+
+            const region = t.closest('[data-region]');
+            if (region) { navigate({ region: region.dataset.region === 'world' ? 'world' : 'in' }); return; }
 
             const open = t.closest('[data-open]');
             if (open) {
@@ -1236,7 +1376,7 @@
             }
 
             const save = t.closest('[data-save]');
-            if (save) { const a = articleFrom('data-save', save); if (a) toggleSave(a); return; }
+            if (save) { const a = articleFrom('data-save', save); if (a) toggleSave(a, save); return; }
 
             const sh = t.closest('[data-share]');
             if (sh) { const a = articleFrom('data-share', sh); if (a) share(a); return; }
@@ -1252,6 +1392,8 @@
             if (mute) {
                 const a = articleFrom('data-mute', mute);
                 if (a && !state.prefs.muted.includes(a.sourceName)) {
+                    const ok = UI() ? await UI().confirm({ title: `Hide ${a.sourceName}?`, body: `You won’t see stories from ${a.sourceName} anymore. You can undo this in Personalize.`, confirmText: 'Hide source', from: mute }) : true;
+                    if (!ok) return;
                     state.prefs.muted.push(a.sourceName);
                     store.set(STORE.prefs, state.prefs);
                     toast(`Hidden: ${a.sourceName}. Undo in Personalize.`);
@@ -1285,15 +1427,37 @@
                 hideBrief();
                 toast('Briefing hidden until tomorrow');
             } else if (action === 'retry') { clearFeedCache(); refresh(); }
+            else if (action === 'go-saved') navigate({ view: 'saved', query: '' });
+            else if (action === 'go-foryou') navigate({ view: 'foryou', query: '' });
+            else if (action === 'clear-saved') {
+                const ok = UI()
+                    ? await UI().confirm({ title: 'Clear all saved stories?', body: `${state.saved.length} saved ${state.saved.length === 1 ? 'story' : 'stories'} will be removed from this device. This can’t be undone.`, confirmText: 'Clear all', danger: true, from: t.closest('button') })
+                    : window.confirm('Clear all saved stories?');
+                if (!ok) return;
+                state.saved = [];
+                store.set(STORE.saved, state.saved);
+                updateSavedCount();
+                refresh();
+                toast('Saved stories cleared');
+            } else if (action === 'print-page') {
+                window.print();
+            } else if (action === 'print-story') {
+                document.body.classList.add('printing-story');
+                window.addEventListener('afterprint', () => document.body.classList.remove('printing-story'), { once: true });
+                window.print();
+            }
         });
 
         // Clicking the dim backdrop closes the sheet.
-        els.storySheet.addEventListener('click', (e) => { if (e.target === els.storySheet) closeStory(); });
+        els.storySheet.addEventListener('click', (e) => {
+            if (e.target !== els.storySheet) return;
+            if (Date.now() - Number(els.storySheet.dataset.draggedAt || 0) < 400) return; // end of a drag, not a tap
+            closeStory();
+        });
         els.storySheet.addEventListener('close', () => {
             els.sheetContent.innerHTML = '';
             state.lastFocus?.focus?.();
         });
-        els.prefsDialog.addEventListener('click', (e) => { if (e.target === els.prefsDialog) els.prefsDialog.close('cancel'); });
 
         // Preferences form
         els.followAddBtn.addEventListener('click', addDraftFollow);
@@ -1309,8 +1473,11 @@
             if (safeText(els.followInput.value)) addDraftFollow();
             savePrefs(draft);
         });
-        els.resetPrefsBtn.addEventListener('click', () => {
-            if (!confirm('Reset topics, follows, hidden sources and reading history?')) return;
+        els.resetPrefsBtn.addEventListener('click', async () => {
+            const ok = UI()
+                ? await UI().confirm({ title: 'Reset personalization?', body: 'Your topics, followed keywords, hidden sources and reading history will be cleared. Saved stories stay.', confirmText: 'Reset', danger: true, from: els.resetPrefsBtn })
+                : window.confirm('Reset topics, follows, hidden sources and reading history?');
+            if (!ok) return;
             [STORE.prefs, STORE.signals, STORE.read].forEach(k => store.remove(k));
             state.prefs = defaultPrefs();
             state.signals = loadSignals();
@@ -1340,8 +1507,11 @@
             if (!q) return;
             els.botInput.value = '';
             botMsg(q, 'user');
-            const ph = botMsg('Thinking…', 'ai');
+            const ph = botMsg('', 'ai');
+            ph.classList.add('thinking');
+            ph.innerHTML = loaderHtml('Thinking', { size: 'sm', inline: true, delay: false });
             const answer = await askBot(q);
+            ph.classList.remove('thinking');
             ph.innerHTML = linkify(answer);
             els.botMessages.scrollTop = els.botMessages.scrollHeight;
         });
@@ -1376,7 +1546,6 @@
         const yearEl = $('currentYear');
         if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
-        applyTheme(getPreferredTheme());
 
         // Keep the sticky category bar right under the sticky header.
         const header = document.querySelector('.site-header');
@@ -1394,6 +1563,7 @@
         bindEvents();
         refresh();
         scheduleAutoRefresh();
+        setInterval(tickTimes, 60_000);
         registerServiceWorker();
     }
 

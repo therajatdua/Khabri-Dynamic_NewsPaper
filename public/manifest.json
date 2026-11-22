@@ -5,16 +5,34 @@
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0b0d10",
-  "theme_color": "#ef4444",
+  "background_color": "#F3EBD0",
+  "theme_color": "#2F4A3A",
   "description": "India-first news, personalized for you, with an AI assistant.",
-  "categories": ["news"],
+  "categories": [
+    "news"
+  ],
   "icons": [
-    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "For You", "url": "/?cat=foryou" },
-    { "name": "Saved stories", "url": "/?cat=saved" }
+    {
+      "name": "For You",
+      "url": "/?cat=foryou"
+    },
+    {
+      "name": "Saved stories",
+      "url": "/?cat=saved"
+    }
   ]
 }

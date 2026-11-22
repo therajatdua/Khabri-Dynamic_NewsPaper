@@ -1,8 +1,8 @@
 // Khabri service worker: offline shell + last-seen feed.
 // Strategy: network-first for pages, /api/news and /api/brief (always fresh when online),
 // falling back to cache when offline. Static assets: stale-while-revalidate.
-const VERSION = 'khabri-v4';
-const SHELL = ['/', '/styles.css', '/script.js', '/manifest.json', '/icon.svg', '/fallback.svg'];
+const VERSION = 'khabri-v5';
+const SHELL = ['/', '/styles.css', '/script.js', '/ui.js', '/theme-init.js', '/manifest.json', '/icon.svg', '/fallback.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

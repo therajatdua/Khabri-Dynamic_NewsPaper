@@ -142,3 +142,23 @@ as $$
 $$;
 -- Functions are executable by everyone by default; only the server may prune.
 revoke execute on function public.prune_news(int) from public, anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Contact form messages (written by /api/contact with the service key).
+-- RLS on with no policies: not readable or writable with the public key.
+-- ---------------------------------------------------------------------------
+create table if not exists public.contact_messages (
+    id uuid default gen_random_uuid() primary key,
+    created_at timestamp with time zone not null default now(),
+    name text,
+    email text not null,
+    topic text not null default 'other',
+    message text not null,
+    page text,
+    attribution jsonb,
+    ip_hash text,
+    user_agent text,
+    handled boolean not null default false
+);
+create index if not exists contact_messages_created_idx on public.contact_messages (created_at desc);
+alter table public.contact_messages enable row level security;

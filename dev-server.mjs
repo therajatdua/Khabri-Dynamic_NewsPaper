@@ -50,7 +50,13 @@ const SECURITY_HEADERS = (() => {
     try {
         const cfg = JSON.parse(readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'vercel.json'), 'utf8'));
         const all = (cfg.headers || []).find(h => h.source === '/(.*)');
-        return Object.fromEntries((all?.headers || []).map(h => [h.key, h.value]));
+        const headers = Object.fromEntries((all?.headers || []).map(h => [h.key, h.value]));
+        // Plain-HTTP localhost: HTTPS-only directives would break local dev.
+        delete headers['Strict-Transport-Security'];
+        if (headers['Content-Security-Policy']) {
+            headers['Content-Security-Policy'] = headers['Content-Security-Policy'].replace(/;\s*upgrade-insecure-requests/, '');
+        }
+        return headers;
     } catch {
         return {};
     }
@@ -81,7 +87,7 @@ function getBody(req) {
 async function routeApi(req, res, url) {
     const pathname = url.pathname;
 
-    const apiMatch = pathname.match(/^\/api\/(news|summary|chat|brief|ingest|analytics)$/);
+    const apiMatch = pathname.match(/^\/api\/(news|summary|chat|brief|ingest|contact|analytics)$/);
     if (!apiMatch) return false;
 
     const name = apiMatch[1];
@@ -193,7 +199,7 @@ function startListening(startPort, attemptsLeft) {
         // eslint-disable-next-line no-console
         console.log(`Khabri -NewsWala dev server running: http://localhost:${port}`);
         // eslint-disable-next-line no-console
-        console.log('API endpoints: /api/news, /api/summary, /api/chat, /api/brief, /api/ingest, /api/analytics');
+        console.log('API endpoints: /api/news, /api/summary, /api/chat, /api/brief, /api/ingest, /api/contact, /api/analytics');
     };
 
     const onError = (err) => {
