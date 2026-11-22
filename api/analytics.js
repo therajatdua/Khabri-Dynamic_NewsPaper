@@ -1,6 +1,34 @@
+import { timingSafeEqual, createHash } from 'node:crypto';
+import { rateLimit } from './_lib/guard.js';
+
+function tokenMatches(given, expected) {
+    // Hash both sides so lengths match for timingSafeEqual.
+    const a = createHash('sha256').update(String(given)).digest();
+    const b = createHash('sha256').update(String(expected)).digest();
+    return timingSafeEqual(a, b);
+}
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Robots-Tag', 'noindex');
+
+    if (!rateLimit(req, res, { key: 'analytics', limit: 10, windowMs: 60_000 })) {
+        return res.status(429).json({ error: 'Too many attempts' });
+    }
+
+    // Dashboard is private: require ANALYTICS_TOKEN (set in Vercel env).
+    const ANALYTICS_TOKEN = process.env.ANALYTICS_TOKEN;
+    if (!ANALYTICS_TOKEN || ANALYTICS_TOKEN.length < 16) {
+        return res.status(503).json({ error: 'Analytics is not configured' });
+    }
+    const auth = (req.headers?.authorization || '').toString();
+    const given = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+    if (!given || !tokenMatches(given, ANALYTICS_TOKEN)) {
+        return res.status(401).json({ error: 'Unauthorized' });
     }
 
     try {
@@ -120,7 +148,7 @@ export default async function handler(req, res) {
                 // Content stats
                 content.totalArticles = articles.length;
                 content.avgViews = articlesViewed > 0 ? Math.round(articlesViewed / articles.length) : 0;
-                content.avgLikes = Math.round(articles.reduce((sum, a) => sum + (a.likes || 0), 0) / articles.length);
+                content.avgLikes = articles.length === 0 ? 0 : Math.round(articles.reduce((sum, a) => sum + (a.likes || 0), 0) / articles.length);
             }
         } catch (e) {
             console.log('article_analytics fetch skipped (table may not exist)');
@@ -144,7 +172,7 @@ export default async function handler(req, res) {
         // Fetch visits over time (last 7 days)
         try {
             const visitsRes = await fetch(
-                `${SUPABASE_URL}/rest/v1/daily_visits?select=date,visit_count order by date desc limit 7`,
+                `${SUPABASE_URL}/rest/v1/daily_visits?select=date,visit_count&order=date.desc&limit=7`,
                 { headers }
             );
             if (visitsRes.ok) {
@@ -159,7 +187,7 @@ export default async function handler(req, res) {
         // Fetch location details
         try {
             const locRes = await fetch(
-                `${SUPABASE_URL}/rest/v1/location_analytics?select=location,user_count,visit_count,avg_session_duration order by user_count desc limit 10`,
+                `${SUPABASE_URL}/rest/v1/location_analytics?select=location,user_count,visit_count,avg_session_duration&order=user_count.desc&limit=10`,
                 { headers }
             );
             if (locRes.ok) {
@@ -175,11 +203,7 @@ export default async function handler(req, res) {
             console.log('location_analytics fetch skipped (table may not exist)');
         }
 
-        // Calculate engagement stats
-        engagement.avgSessionDuration = '5m 32s';
-        engagement.bounceRate = '42%';
-        engagement.returnVisitors = Math.round(totalUsers * 0.35) + ' users';
-        engagement.activeNow = Math.round(totalUsers * 0.08) + ' users';
+        // Engagement metrics are not tracked yet; do not report invented numbers.
 
         // Return comprehensive analytics
         const analyticsData = {
@@ -204,9 +228,6 @@ export default async function handler(req, res) {
         res.status(200).json(analyticsData);
     } catch (err) {
         console.error('Unexpected error in /api/analytics:', err);
-        return res.status(500).json({ 
-            error: 'Failed to fetch analytics', 
-            details: err?.message || String(err)
-        });
+        return res.status(500).json({ error: 'Failed to fetch analytics' });
     }
 }

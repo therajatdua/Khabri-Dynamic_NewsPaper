@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Analytics - Khabri Dynamic NewsPaper</title>
+  <script src="/theme-init.js"></script>
   <link rel="stylesheet" href="/styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta name="robots" content="noindex, nofollow">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
   <style>
     /* Analytics Page Styling */
     .analytics-wrapper {
@@ -41,6 +43,8 @@
       flex-direction: column;
       gap: 16px;
     }
+    .password-wrap { width: 100%; }
+    .password-wrap .code-input { width: 100%; }
     .code-input {
       padding: 14px 16px;
       border: 2px solid var(--border);
@@ -259,17 +263,23 @@
     <div id="codeAccessView" class="code-access-view">
       <div class="code-card">
         <h2>📊 Analytics Dashboard</h2>
-        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 24px;">Enter access code to view detailed analytics</p>
+        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 24px;">Enter your analytics token (ANALYTICS_TOKEN) to continue</p>
         <form id="codeForm" class="code-form">
-          <input 
-            id="accessCode" 
-            type="password" 
-            class="code-input" 
-            placeholder="••••" 
-            maxlength="4"
-            inputmode="numeric"
-            required
-          />
+          <div class="password-wrap">
+            <input
+              id="accessCode"
+              type="password"
+              class="code-input"
+              placeholder="Access token"
+              autocomplete="current-password"
+              aria-label="Analytics access token"
+              required
+            />
+            <button type="button" class="icon-btn pw-toggle" data-password-toggle aria-label="Show token" aria-pressed="false">
+              <svg class="ic ic-eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="ic ic-eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17.4 17.4 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+            </button>
+          </div>
           <button type="submit" class="code-btn">Access Dashboard</button>
           <div id="codeError" class="code-error"></div>
         </form>
@@ -404,257 +414,7 @@
     </div>
   </div>
 
-  <script>
-    let activeCharts = [];
-
-    document.addEventListener('DOMContentLoaded', () => {
-      /* Theme Configuration */
-      const themeToggle = document.getElementById('themeToggle');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const savedTheme = localStorage.getItem('khabri_theme');
-
-      if (savedTheme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        if (themeToggle) themeToggle.textContent = 'Light';
-      } else if (savedTheme === 'light') {
-        document.documentElement.removeAttribute('data-theme');
-        if (themeToggle) themeToggle.textContent = 'Dark';
-      } else if (prefersDark) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        if (themeToggle) themeToggle.textContent = 'Light';
-      }
-
-      /* Analytics Logic */
-      const codeAccessView = document.getElementById('codeAccessView');
-      const dashboardView = document.getElementById('dashboardView');
-      const codeForm = document.getElementById('codeForm');
-      const codeError = document.getElementById('codeError');
-      const exitBtn = document.getElementById('exitBtn');
-      const accessCodeInput = document.getElementById('accessCode');
-
-      // Auto-load analytics without code
-      fetchAnalytics();
-
-      exitBtn.addEventListener('click', () => {
-        location.reload();
-      });
-
-      function fetchAnalytics() {
-        fetch('/api/analytics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
-        })
-        .then(async (res) => {
-          if (!res.ok) throw new Error('API error');
-          return res.json();
-        })
-        .then(data => {
-          codeAccessView.style.display = 'none';
-          dashboardView.style.display = 'block';
-          paintDashboard(data);
-        })
-        .catch(err => {
-          console.error(err);
-          codeError.textContent = 'Failed to load analytics. Please refresh.';
-          codeError.style.display = 'block';
-        });
-      }
-
-      function paintDashboard(data) {
-        /* Update Key Metrics */
-        document.getElementById('totalUsers').textContent = (data.totalUsers || 0).toLocaleString();
-        document.getElementById('totalVisits').textContent = (data.totalVisits || 0).toLocaleString();
-        document.getElementById('articlesViewed').textContent = (data.articlesViewed || 0).toLocaleString();
-        document.getElementById('aiUsage').textContent = (data.aiUsage || 0).toLocaleString();
-
-        /* Destroy old charts */
-        activeCharts.forEach(c => c.destroy());
-        activeCharts = [];
-
-        const chartOptions = {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom', labels: { color: 'var(--text-secondary)' } } },
-          scales: {
-            y: { beginAtZero: true, grid: { color: 'var(--border)' }, ticks: { color: 'var(--text-secondary)' } },
-            x: { grid: { display: false }, ticks: { color: 'var(--text-secondary)' } }
-          }
-        };
-
-        /* Device Chart */
-        if (data.devices && data.devices.labels.length > 0) {
-          const ctx = document.getElementById('deviceChart').getContext('2d');
-          const chart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-              labels: data.devices.labels,
-              datasets: [{
-                data: data.devices.values,
-                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
-              }]
-            },
-            options: { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { position: 'bottom' } } }
-          });
-          activeCharts.push(chart);
-        }
-
-        /* Locations Chart */
-        if (data.locations && data.locations.labels.length > 0) {
-          const ctx = document.getElementById('locationsChart').getContext('2d');
-          const chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels: data.locations.labels.slice(0, 5),
-              datasets: [{
-                label: 'Users',
-                data: data.locations.values.slice(0, 5),
-                backgroundColor: '#3b82f6',
-                borderRadius: 4
-              }]
-            },
-            options: chartOptions
-          });
-          activeCharts.push(chart);
-        }
-
-        /* Gender Chart */
-        if (data.gender && data.gender.labels.length > 0) {
-          const ctx = document.getElementById('genderChart').getContext('2d');
-          const chart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-              labels: data.gender.labels,
-              datasets: [{
-                data: data.gender.values,
-                backgroundColor: ['#ec4899', '#3b82f6', '#6b7280']
-              }]
-            },
-            options: { ...chartOptions, plugins: { ...chartOptions.plugins, legend: { position: 'bottom' } } }
-          });
-          activeCharts.push(chart);
-        }
-
-        /* Age Chart */
-        if (data.ageGroups && data.ageGroups.labels.length > 0) {
-          const ctx = document.getElementById('ageChart').getContext('2d');
-          const chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels: data.ageGroups.labels,
-              datasets: [{
-                label: 'Users',
-                data: data.ageGroups.values,
-                backgroundColor: '#10b981',
-                borderRadius: 4
-              }]
-            },
-            options: chartOptions
-          });
-          activeCharts.push(chart);
-        }
-
-        /* AI Features Chart */
-        if (data.aiFeatures && data.aiFeatures.labels.length > 0) {
-          const ctx = document.getElementById('aiChart').getContext('2d');
-          const chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels: data.aiFeatures.labels,
-              datasets: [{
-                label: 'Usage Count',
-                data: data.aiFeatures.values,
-                backgroundColor: '#f59e0b',
-                borderRadius: 4
-              }]
-            },
-            options: chartOptions
-          });
-          activeCharts.push(chart);
-        }
-
-        /* Visits Trend */
-        if (data.visitsOverTime && data.visitsOverTime.labels.length > 0) {
-          const ctx = document.getElementById('visitsChart').getContext('2d');
-          const chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels: data.visitsOverTime.labels,
-              datasets: [{
-                label: 'Daily Visits',
-                data: data.visitsOverTime.values,
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#3b82f6',
-                pointBorderColor: '#fff'
-              }]
-            },
-            options: chartOptions
-          });
-          activeCharts.push(chart);
-        }
-
-        /* Browser Stats */
-        if (data.browsers) {
-          let html = '';
-          Object.entries(data.browsers).forEach(([browser, count]) => {
-            html += `<div class="stat-item"><span class="stat-label">${browser}</span><span class="stat-value">${count}</span></div>`;
-          });
-          document.getElementById('browserStats').innerHTML = html || '<div style="color: var(--text-secondary);">No data</div>';
-        }
-
-        /* Engagement Stats */
-        if (data.engagement) {
-          let html = '';
-          Object.entries(data.engagement).forEach(([key, value]) => {
-            const label = key.replace(/([A-Z])/g, ' $1').trim();
-            html += `<div class="stat-item"><span class="stat-label">${label}</span><span class="stat-value">${value}</span></div>`;
-          });
-          document.getElementById('engagementStats').innerHTML = html || '<div style="color: var(--text-secondary);">No data</div>';
-        }
-
-        /* Content Stats */
-        if (data.content) {
-          let html = '';
-          Object.entries(data.content).forEach(([key, value]) => {
-            const label = key.replace(/([A-Z])/g, ' $1').trim();
-            html += `<div class="stat-item"><span class="stat-label">${label}</span><span class="stat-value">${value}</span></div>`;
-          });
-          document.getElementById('contentStats').innerHTML = html || '<div style="color: var(--text-secondary);">No data</div>';
-        }
-
-        /* Location Table */
-        if (data.locationDetails && data.locationDetails.length > 0) {
-          let html = '';
-          data.locationDetails.slice(0, 10).forEach(loc => {
-            html += `<tr>
-              <td>${loc.location}</td>
-              <td>${loc.users}</td>
-              <td>${loc.visits}</td>
-              <td>${loc.avgDuration}s</td>
-            </tr>`;
-          });
-          document.getElementById('locationTableBody').innerHTML = html;
-        }
-
-        /* Articles Table */
-        if (data.topArticles && data.topArticles.length > 0) {
-          let html = '';
-          data.topArticles.slice(0, 10).forEach(article => {
-            html += `<tr>
-              <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">${article.title}</td>
-              <td>${article.views}</td>
-              <td>${article.likes}</td>
-              <td>${article.shares}</td>
-            </tr>`;
-          });
-          document.getElementById('articlesTableBody').innerHTML = html;
-        }
-      }
-    });
-  </script>
+  <script src="/ui.js" defer></script>
+  <script src="/analytics.js" defer></script>
 </body>
 </html>
