@@ -11,11 +11,15 @@ const reasoningOpts = (model) => (model.startsWith('openai/gpt-oss')
  * Returns the model's plain-text reply, or '' when AI is unavailable
  * (no key, all models failed, timeout). Callers supply their own fallback.
  */
-export async function groqComplete({ system, user, maxTokens = 600, temperature = 0.2, timeoutMs = 15000 }) {
+export async function groqComplete({ system, user, maxTokens = 600, temperature = 0.2, timeoutMs = 15000, models: preferred, exclusive = false }) {
     const key = process.env.GROQ_API_KEY;
     if (!key) return '';
 
-    const models = [...new Set([(process.env.GROQ_MODEL || '').trim(), ...MODELS].filter(Boolean))];
+    // Callers may prefer cheaper models (e.g. bulk jobs) so interactive features keep their quota.
+    // `exclusive`: use only the given models (no fallback to weaker ones).
+    const models = exclusive && preferred
+        ? preferred
+        : [...new Set([...(preferred || [(process.env.GROQ_MODEL || '').trim()]), ...MODELS].filter(Boolean))];
 
     for (const model of models) {
         try {
@@ -37,9 +41,13 @@ export async function groqComplete({ system, user, maxTokens = 600, temperature 
             const data = await response.json().catch(() => null);
             if (!response.ok) {
                 const msg = (data?.error?.message || '').toString();
-                // Retired/unknown model: try the next one. Anything else: give up.
-                if (/decommissioned|model|not\s+supported|does\s+not\s+exist/i.test(msg)) {
-                    console.warn(`Groq model ${model} unavailable: ${msg || response.status}`);
+                // Rate limited (limits are per model) or retired model: try the next one.
+                if (response.status === 429) {
+                    console.warn(`Groq ${model} rate limited, trying next model`);
+                    continue;
+                }
+                if (/decommissioned|not\s+supported|does\s+not\s+exist|model_not_found/i.test(msg)) {
+                    console.warn(`Groq model ${model} unavailable: ${msg.slice(0, 120) || response.status}`);
                     continue;
                 }
                 return '';
